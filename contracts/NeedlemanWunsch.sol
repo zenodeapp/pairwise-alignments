@@ -246,7 +246,16 @@ contract NeedlemanWunsch {
     uint alignmentsFound;
   }
 
-  function needlemanWunsch(string memory sequenceA, string memory sequenceB, AlignmentOptions memory alignmentOptions)
+  function needlemanWunsch(string memory sequenceA, string memory sequenceB,
+    int gapPenalty,
+    string memory schemeType,
+    string memory substitutionMatrix,
+    uint limit)
+  public view returns(AlignmentOutput memory alignmentOutput) {
+    return _needlemanWunsch(sequenceA, sequenceB, AlignmentOptions(gapPenalty, schemeType, substitutionMatrix, limit));
+  }
+
+  function _needlemanWunsch(string memory sequenceA, string memory sequenceB, AlignmentOptions memory alignmentOptions)
   public view returns(AlignmentOutput memory alignmentOutput) {
     uint width = bytes(sequenceA).length + 1;
     uint height = bytes(sequenceB).length + 1;

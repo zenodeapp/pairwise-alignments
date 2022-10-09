@@ -18,6 +18,13 @@ module.exports = {
   networks: {
     hardhat: { gas: 2000000000, blockGasLimit: 2000000000 },
     localhost: { url: "http://127.0.0.1:8545", timeout: 100000000 },
+    genesisd: {
+      url: "https://rpcb.genesisL1.org",
+      gas: 2000000000,
+      chainId: 29,
+      accounts: [],
+      timeout: 100000000,
+    },
   },
   mocha: {
     timeout: 100000000,

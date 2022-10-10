@@ -1,7 +1,8 @@
 require("@nomicfoundation/hardhat-toolbox");
 const { task } = require("hardhat/config");
 const web3 = require("web3");
-const { getAlignmentContract } = require("./helpers/web3");
+const { getContract } = require("./helpers/web3");
+const { contracts } = require("./proteins.config");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {
@@ -31,97 +32,107 @@ module.exports = {
   },
 };
 
-task("needlemanWunsch", "Returns information about this indexer.")
-  .addParam("a", "The seed size.")
-  .addParam("b", "The seed address to add to the protein indexer.")
-  .addParam("type", "The seed address to add to the protein indexer.")
-  .addOptionalParam(
-    "gap",
-    "The seed address to add to the protein indexer.",
-    "-1"
-  )
-  .addOptionalParam(
-    "limit",
-    "The seed address to add to the protein indexer.",
-    "0"
-  )
-  // .addOptionalParam(
-  //   "showmatrices",
-  //   "The seed address to add to the protein indexer.",
-  //   "false"
-  // )
-  .addOptionalParam(
-    "matrix",
-    "The seed address to add to the protein indexer.",
-    "default"
-  )
+task("needlemanWunsch")
+  .addParam("a")
+  .addParam("b")
+  .addParam("type")
+  .addOptionalParam("gap", "", "-1")
+  .addOptionalParam("limit", "", "0")
+  .addOptionalParam("matrix", "", "default")
   .setAction(async (taskArgs, hre) => {
     const { a, b, type, gap, matrix, limit } = taskArgs;
-    const contract = await getAlignmentContract(hre);
+    const contract = await getContract(
+      hre,
+      contracts.needlemanWunsch.name,
+      contracts.needlemanWunsch.address
+    );
 
-    const result = await contract.needlemanWunsch(a, b, {
+    const result = await contract._needlemanWunsch(a, b, {
       gapPenalty: parseInt(gap),
       schemeType: type,
       substitutionMatrix: matrix,
-      // showMatrices: showmatrices === "true",
       limit: parseInt(limit),
     });
-    // let str = "";
-    // // console.log(result.matrices.tracebackMatrix[0].positions[0]);
-    // for (let i = 0; i < result.matrices.tracebackMatrix.length; i++) {
-    //   if (i % 8 === 0) str = str + "\n";
-    //   str = str + "[";
-    //   for (
-    //     let j = 0;
-    //     j < result.matrices.tracebackMatrix[i].positions.length;
-    //     j++
-    //   ) {
-    //     str = str + result.matrices.tracebackMatrix[i].positions[j];
-    //     // switch (result.matrices.tracebackMatrix[i].positions[j]) {
-    //     //   case 0:
-    //     //     str = `${str}, current`;
-    //     //     break;
-    //     //   case 1:
-    //     //     str = `${str}, left`;
-    //     //     break;
-    //     //   case 2:
-    //     //     str = `${str}, up`;
-    //     //     break;
-    //     //   case 3:
-    //     //     str = `${str}, diag`;
-    //     //     break;
-    //     // }
-    //   }
-    //   str = str + "], ";
-    // }
 
-    // console.log(str);
-
-    // str = "";
-    // for (let i = 0; i < result.matrices.scoreMatrix.length; i++) {
-    //   if (i % 8 === 0) str = str + "\n";
-    //   str = str + result.matrices.scoreMatrix[i];
-    //   // switch (result.matrices.tracebackMatrix[i].positions[j]) {
-    //   //   case 0:
-    //   //     str = `${str}, current`;
-    //   //     break;
-    //   //   case 1:
-    //   //     str = `${str}, left`;
-    //   //     break;
-    //   //   case 2:
-    //   //     str = `${str}, up`;
-    //   //     break;
-    //   //   case 3:
-    //   //     str = `${str}, diag`;
-    //   //     break;
-    //   // }
-    //   str = str + ", ";
-    // }
-    // console.log(str);
     console.log(result);
     console.log({
       gap: parseInt(gap),
-      schemeType: type,
-      substitutionMatrix: matrix,
+      type: type,
+      matrix: matrix,
     });
+  });
+
+task("getMatrix")
+  .addParam("id")
+  .setAction(async (taskArgs, hre) => {
+    const { id } = taskArgs;
+    const contract = await getContract(
+      hre,
+      contracts.substitutionMatrices.name,
+      contracts.substitutionMatrices.address
+    );
+
+    const result = await contract.getMatrix(id);
+
+    console.log(result);
+  });
+
+task("getMatrices").setAction(async (_, hre) => {
+  const contract = await getContract(
+    hre,
+    contracts.substitutionMatrices.name,
+    contracts.substitutionMatrices.address
+  );
+
+  const result = await contract.getMatrices();
+
+  console.log(result);
+});
+
+task("getAlphabet")
+  .addParam("id")
+  .setAction(async (taskArgs, hre) => {
+    const { id } = taskArgs;
+    const contract = await getContract(
+      hre,
+      contracts.substitutionMatrices.name,
+      contracts.substitutionMatrices.address
+    );
+
+    const result = await contract.getAlphabet(id);
+
+    console.log(result);
+  });
+
+task("getAlphabets").setAction(async (_, hre) => {
+  const contract = await getContract(
+    hre,
+    contracts.substitutionMatrices.name,
+    contracts.substitutionMatrices.address
+  );
+
+  const result = await contract.getAlphabets();
+
+  console.log(result);
+});
+
+task("getScore")
+  .addParam("matrix")
+  .addParam("a")
+  .addParam("b")
+  .setAction(async (taskArgs, hre) => {
+    const { matrix, a, b } = taskArgs;
+    const contract = await getContract(
+      hre,
+      contracts.substitutionMatrices.name,
+      contracts.substitutionMatrices.address
+    );
+
+    const result = await contract.getScore(
+      matrix,
+      web3.utils.toHex(a),
+      web3.utils.toHex(b)
+    );
+
+    console.log(result);
   });

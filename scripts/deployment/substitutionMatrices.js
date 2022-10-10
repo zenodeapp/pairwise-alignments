@@ -3,7 +3,7 @@ const { contracts } = require("../../proteins.config");
 const hre = require("hardhat");
 
 async function main() {
-  const contractName = contracts.needlemanWunsch.name;
+  const contractName = contracts.substitutionMatrices.name;
 
   const Factory = await getFactory(hre, contractName);
   const contract = await Factory.deploy();

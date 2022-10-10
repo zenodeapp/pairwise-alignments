@@ -2,7 +2,7 @@ pragma solidity ^0.8.17;
 import './base/Owner.sol';
 
 //SPDX-License-Identifier: UNLICENSED
-//Created by Tousuke (zenodeapp - https://github.com/zenodeapp/protein-crud).
+//Created by Tousuke (zenodeapp - https://github.com/zenodeapp/).
 
 contract SubstitutionMatrices is Owner {
   struct Matrix {

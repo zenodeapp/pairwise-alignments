@@ -1,7 +1,7 @@
 pragma solidity ^0.8.17;
 
 //SPDX-License-Identifier: UNLICENSED
-//Created by Tousuke (zenodeapp - https://github.com/zenodeapp/protein-crud) - Work in Progress.
+//Created by Tousuke (zenodeapp - https://github.com/zenodeapp/) - Work in Progress.
 
 contract NeedlemanWunsch {
   mapping(bytes1 => uint) dnaMapping;

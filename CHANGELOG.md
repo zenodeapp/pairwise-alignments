@@ -5,6 +5,7 @@
 - Started separating the SubstitutionMatrices logic.
 - A new contract has been made (SubstitutionMatrices.sol). It's a CRUD for matrices and alphabets, this way matrices become modular.
 - Included a bunch of scripts to read matrices, alphabets and interact with the contract (Javascript logic).
+- Added Owner.sol.
 
 #### 1.0.0 (2022-10-08)
 

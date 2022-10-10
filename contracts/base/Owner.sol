@@ -1,7 +1,7 @@
 pragma solidity ^0.8.12;
 
 //SPDX-License-Identifier: UNLICENSED
-//Created by Tousuke (zenodeapp - https://github.com/zenodeapp/protein-crud).
+//Created by Tousuke (zenodeapp - https://github.com/zenodeapp/).
 
 contract Owner {
   address owner;

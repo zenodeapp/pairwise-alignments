@@ -1,5 +1,5 @@
 const { getContract } = require("../../helpers/web3");
-const { contracts, alphabetToDelete } = require("../../proteins.config");
+const { contracts, alphabetToDelete } = require("../../zenode.config");
 
 async function main() {
   const contract = await getContract(

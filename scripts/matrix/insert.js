@@ -1,10 +1,6 @@
 const fs = require("fs/promises");
 const { getContract } = require("../../helpers/web3");
-const {
-  matrices,
-  contracts,
-  matrixToInsert,
-} = require("../../proteins.config");
+const { matrices, contracts, matrixToInsert } = require("../../zenode.config");
 const web3 = require("web3");
 
 async function main() {

@@ -1,5 +1,5 @@
 // const fs = require("fs/promises");
-// const { matrices } = require("../../proteins.config");
+// const { matrices } = require("../../zenode.config");
 
 // async function main() {
 //   const file = await fs.readFile(matrices[0].file, { encoding: "utf8" });

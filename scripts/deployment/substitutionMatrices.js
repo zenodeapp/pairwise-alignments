@@ -1,5 +1,5 @@
 const { getFactory } = require("../../helpers/web3");
-const { contracts } = require("../../proteins.config");
+const { contracts } = require("../../zenode.config");
 const hre = require("hardhat");
 
 async function main() {

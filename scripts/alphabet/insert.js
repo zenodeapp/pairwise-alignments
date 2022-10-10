@@ -4,7 +4,7 @@ const {
   contracts,
   alphabets,
   alphabetToInsert,
-} = require("../../proteins.config");
+} = require("../../zenode.config");
 const web3 = require("web3");
 
 async function main() {

@@ -2,7 +2,7 @@ require("@nomicfoundation/hardhat-toolbox");
 const { task } = require("hardhat/config");
 const web3 = require("web3");
 const { getContract } = require("./helpers/web3");
-const { contracts } = require("./proteins.config");
+const { contracts } = require("./zenode.config");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 module.exports = {

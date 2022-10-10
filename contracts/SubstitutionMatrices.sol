@@ -1,9 +1,10 @@
 pragma solidity ^0.8.17;
+import './base/Owner.sol';
 
 //SPDX-License-Identifier: UNLICENSED
 //Created by Tousuke (zenodeapp - https://github.com/zenodeapp/protein-crud).
 
-contract SubstitutionMatrices {
+contract SubstitutionMatrices is Owner {
   struct Matrix {
     string id;
     int[][] grid;
@@ -46,7 +47,7 @@ contract SubstitutionMatrices {
   }
 
   function insertAlphabet(string memory id, bytes1[] memory alphabet)
-  public {
+  public onlyAdmin {
     require(!isAlphabet(id), "Alphabet with this id already exists, consider using a different name or update the alphabet.");
     
     alphabets[id].id = id;
@@ -60,7 +61,7 @@ contract SubstitutionMatrices {
   }
 
   function updateAlphabet(string memory id, bytes1[] memory alphabet)
-  public {
+  public onlyAdmin {
     require(isAlphabet(id), "Alphabet can't be updated for it does not exist.");
     require(alphabets[id].usage == 0, "This alphabet is being used by a matrix and can therefore not be updated.");
     
@@ -73,7 +74,7 @@ contract SubstitutionMatrices {
   }
 
   function deleteAlphabet(string memory id)
-  public {
+  public onlyAdmin {
     require(isAlphabet(id), "This alphabet does not exist.");
     require(alphabets[id].usage == 0, "This alphabet is being used by a matrix and can therefore not be deleted.");
 
@@ -112,7 +113,7 @@ contract SubstitutionMatrices {
   }
 
   function insertMatrix(string memory id, string memory alphabetId, int[][] memory grid)
-  public {
+  public onlyAdmin {
     require(isAlphabet(alphabetId), "This alphabet does not exist, make sure to first add an alphabet before adding a matrix.");
     require(!isMatrix(id), "Matrix with this id already exists, consider using a different name or update the matrix.");
     
@@ -126,7 +127,7 @@ contract SubstitutionMatrices {
   }
 
   function updateMatrix(string memory id, int[][] memory grid)
-  public {
+  public onlyAdmin {
     require(isMatrix(id), "Matrix can't be updated for it does not exist.");
     
     matrices[id].id = id;
@@ -134,7 +135,7 @@ contract SubstitutionMatrices {
   }
 
   function deleteMatrix(string memory id)
-  public {
+  public onlyAdmin {
     require(isMatrix(id), "This Matrix does not exist.");
     
     uint rowToDelete = matrices[id].index;

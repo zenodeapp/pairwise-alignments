@@ -32,33 +32,6 @@ module.exports = {
   },
 };
 
-task("needlemanWunsch")
-  .addParam("a")
-  .addParam("b")
-  .addOptionalParam("gap", "", "-1")
-  .addOptionalParam("limit", "", "0")
-  .addOptionalParam("matrix", "", "default")
-  .setAction(async (taskArgs, hre) => {
-    const { a, b, gap, matrix, limit } = taskArgs;
-    const contract = await getContract(
-      hre,
-      contracts.needlemanWunsch.name,
-      contracts.needlemanWunsch.address
-    );
-
-    const result = await contract._needlemanWunsch(a, b, {
-      gapPenalty: parseInt(gap),
-      substitutionMatrix: matrix,
-      limit: parseInt(limit),
-    });
-
-    console.log(result);
-    console.log({
-      gap: parseInt(gap),
-      matrix: matrix,
-    });
-  });
-
 task("getMatrix")
   .addParam("id")
   .setAction(async (taskArgs, hre) => {
@@ -134,7 +107,34 @@ task("getScore")
     console.log(result);
   });
 
-task("linkMatricesAddress")
+task("needlemanWunsch")
+  .addParam("a")
+  .addParam("b")
+  .addOptionalParam("gap", "", "-1")
+  .addOptionalParam("limit", "", "0")
+  .addOptionalParam("matrix", "", "default")
+  .setAction(async (taskArgs, hre) => {
+    const { a, b, gap, matrix, limit } = taskArgs;
+    const contract = await getContract(
+      hre,
+      contracts.needlemanWunsch.name,
+      contracts.needlemanWunsch.address
+    );
+
+    const result = await contract._needlemanWunsch(a, b, {
+      gapPenalty: parseInt(gap),
+      substitutionMatrix: matrix,
+      limit: parseInt(limit),
+    });
+
+    console.log(result);
+    console.log({
+      gap: parseInt(gap),
+      matrix: matrix,
+    });
+  });
+
+task("updateMatricesAddress")
   .addOptionalParam("address", "", contracts.substitutionMatrices.address)
   .setAction(async (taskArgs, hre) => {
     const { address } = taskArgs;
@@ -144,7 +144,9 @@ task("linkMatricesAddress")
       contracts.needlemanWunsch.address
     );
 
-    const result = await contract.linkMatricesAddress(address);
+    const result = await contract.updateMatricesAddress(address);
 
-    console.log(result);
+    if (result) {
+      console.log(`Successfully updated the matrices address to ${address}!`);
+    }
   });

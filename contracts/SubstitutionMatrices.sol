@@ -12,27 +12,6 @@ contract SubstitutionMatrices is Owner {
   string[] public insertedMatrices;
   string[] public insertedAlphabets;
 
-  function isAlphabet(string memory id)
-  public view returns(bool exists) {
-    return bytes(alphabets[id].id).length > 0;
-  }
-  
-  function testAlphabet(string memory id, bytes1[] memory alphabet)
-  public view returns(bool isValid) {
-    require(isAlphabet(id), "Testing failed for this alphabet does not exist, insert the alphabet first before testing.");
-    
-    bytes1[] memory _alphabet = alphabets[id].array;
-    require(!(_alphabet.length < alphabet.length), "The provided alphabet contains more characters than the stored alphabet!");
-    
-    isValid = true;
-    for(uint i = 0; i < alphabet.length; i++) {
-      if(alphabet[i] != _alphabet[i]) {
-        isValid = false;
-        break;
-      }
-    }
-  }
-
   function insertAlphabet(string memory id, bytes1[] memory alphabet)
   public onlyAdmin {
     require(!isAlphabet(id), "Alphabet with this id already exists, consider using a different name or update the alphabet.");
@@ -94,9 +73,25 @@ contract SubstitutionMatrices is Owner {
     return insertedAlphabets;
   }
 
-  function isMatrix(string memory id)
+  function isAlphabet(string memory id)
   public view returns(bool exists) {
-    return bytes(matrices[id].id).length > 0;
+    return bytes(alphabets[id].id).length > 0;
+  }
+  
+  function testAlphabet(string memory id, bytes1[] memory alphabet)
+  public view returns(bool isValid) {
+    require(isAlphabet(id), "Testing failed for this alphabet does not exist, insert the alphabet first before testing.");
+    
+    bytes1[] memory _alphabet = alphabets[id].array;
+    require(!(_alphabet.length < alphabet.length), "The provided alphabet contains more characters than the stored alphabet!");
+    
+    isValid = true;
+    for(uint i = 0; i < alphabet.length; i++) {
+      if(alphabet[i] != _alphabet[i]) {
+        isValid = false;
+        break;
+      }
+    }
   }
 
   function insertMatrix(string memory id, string memory alphabetId, int[][] memory grid)
@@ -150,6 +145,11 @@ contract SubstitutionMatrices is Owner {
   function getMatrices()
   public view returns(string[] memory) {
     return insertedMatrices;
+  }
+
+  function isMatrix(string memory id)
+  public view returns(bool exists) {
+    return bytes(matrices[id].id).length > 0;
   }
 
   function getScore(string memory matrixId, bytes1 charA, bytes1 charB)

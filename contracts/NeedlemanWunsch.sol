@@ -6,19 +6,20 @@ import './SubstitutionMatrices.sol';
 //Created by Tousuke (zenodeapp - https://github.com/zenodeapp/) - Work in Progress.
 
 contract NeedlemanWunsch is Owner {
-  mapping(string => uint) tracebackMapping;
+  SubstitutionMatrices matricesContract;
+  uint defaultLimit = 25;
+
   mapping(string => mapping(bytes1 => uint)) alphabetIndices;
 
-  uint DEFAULT_ALIGNMENT_LIMIT = 25;
-  SubstitutionMatrices matricesContract;
+  enum TracebackCommand {
+    LEFT,
+    UP,
+    DIAG,
+    STOP
+  }
 
   constructor(SubstitutionMatrices _matricesAddress) {
-    linkMatricesAddress(_matricesAddress);
-
-    tracebackMapping["done"] = 0;
-    tracebackMapping["left"] = 1;
-    tracebackMapping["up"] = 2;
-    tracebackMapping["diag"] = 3;
+    updateMatricesAddress(_matricesAddress);
   }
 
   struct MatrixPositions {
@@ -49,7 +50,7 @@ contract NeedlemanWunsch is Owner {
   }
 
   struct AlignmentBranches {
-    uint[] positions;
+    TracebackCommand[] positions;
   }
 
   struct Matrices {
@@ -57,7 +58,7 @@ contract NeedlemanWunsch is Owner {
     AlignmentBranches[] tracebackMatrix;
   }
 
-  struct AlignmentSequences {
+  struct Alignment {
     string alignmentA;
     string alignmentB;
   }
@@ -65,11 +66,12 @@ contract NeedlemanWunsch is Owner {
   struct AlignmentOutput {
     string sequenceA;
     string sequenceB;
-    AlignmentSequences[] alignments;
-    // Matrices matrices;
+    Alignment[] alignments;
     int score;
     uint alignmentsFound;
   }
+
+
 
   function needlemanWunsch(string memory sequenceA, string memory sequenceB,
     int gapPenalty,
@@ -77,26 +79,6 @@ contract NeedlemanWunsch is Owner {
     uint limit)
   public view returns(AlignmentOutput memory alignmentOutput) {
     return _needlemanWunsch(sequenceA, sequenceB, AlignmentOptions(gapPenalty, substitutionMatrix, limit));
-  }
-
-  function updateAlphabetIndices() 
-  public onlyAdmin {
-    string[] memory alphabetIds = matricesContract.getAlphabets();
-
-    for(uint i = 0; i < alphabetIds.length; i++) {
-      Structs.Alphabet memory alphabet = matricesContract.getAlphabet(alphabetIds[i]);
-      bytes1[] memory alphabetChars = alphabet.array;
-
-      for(uint j = 0; j < alphabetChars.length; j++) {
-        alphabetIndices[alphabetIds[i]][alphabetChars[j]]= j;
-      }
-    }
-  }
-
-  function linkMatricesAddress(SubstitutionMatrices _address) 
-  public onlyAdmin {
-    matricesContract = _address;
-    updateAlphabetIndices();
   }
 
   function _needlemanWunsch(string memory sequenceA, string memory sequenceB, AlignmentOptions memory alignmentOptions)
@@ -108,7 +90,7 @@ contract NeedlemanWunsch is Owner {
     uint height = bytes(sequenceB).length + 1;
     uint currentPos = width * height - 1;
 
-    if(alignmentOptions.limit == 0) alignmentOptions.limit = DEFAULT_ALIGNMENT_LIMIT;
+    if(alignmentOptions.limit == 0) alignmentOptions.limit = defaultLimit;
 
     // Initialization
     (Matrices memory matrices) = initializeMatrices(width, height, alignmentOptions.gapPenalty);
@@ -118,9 +100,9 @@ contract NeedlemanWunsch is Owner {
     (matrices, total) = scoreMatrices(matrices, width, height, [sequenceA, sequenceB], alignmentOptions, matrix);
 
     // Traceback
-    AlignmentSequences[] memory _alignments = new AlignmentSequences[](total);
+    Alignment[] memory _alignments = new Alignment[](total);
     (_alignments, total) = traceback(TracebackData(currentPos, width, 0), [sequenceA, sequenceB], _alignments, matrices.tracebackMatrix);
-    alignmentOutput.alignments = new AlignmentSequences[](total);
+    alignmentOutput.alignments = new Alignment[](total);
     for(uint i = 0; i < total; i++) {
       alignmentOutput.alignments[i] = _alignments[i];
     }
@@ -134,25 +116,25 @@ contract NeedlemanWunsch is Owner {
   }
 
   function initializeMatrices(uint width, uint height, int gapPenalty)
-  internal view returns(Matrices memory matrices) {
+  internal pure returns(Matrices memory matrices) {
     int[] memory scoreMatrix = new int[](width * height);
     AlignmentBranches[] memory tracebackMatrix = new AlignmentBranches[](width * height);
 
     for(uint i = 0; i < width || i < height; i++) {
       if(i == 0) {
         scoreMatrix[i] = 0;
-        tracebackMatrix[i].positions = new uint[](1);
-        tracebackMatrix[i].positions[0] = tracebackMapping["done"];
+        tracebackMatrix[i].positions = new TracebackCommand[](1);
+        tracebackMatrix[i].positions[0] = TracebackCommand.STOP;
       } else {
         if(i < width) {
           scoreMatrix[i] = int(i) * gapPenalty;
-          tracebackMatrix[i].positions = new uint[](1);
-          tracebackMatrix[i].positions[0] = tracebackMapping["left"];
+          tracebackMatrix[i].positions = new TracebackCommand[](1);
+          tracebackMatrix[i].positions[0] = TracebackCommand.LEFT;
         }
         if(i < height) {
           scoreMatrix[i*width] = int(i) * gapPenalty;
-          tracebackMatrix[i*width].positions = new uint[](1);
-          tracebackMatrix[i*width].positions[0] = tracebackMapping["up"];
+          tracebackMatrix[i*width].positions = new TracebackCommand[](1);
+          tracebackMatrix[i*width].positions[0] = TracebackCommand.UP;
         }
       }
     }
@@ -185,23 +167,23 @@ contract NeedlemanWunsch is Owner {
         + (matrixScores.up == maxScore ? 1 : 0);
 
         uint k = 0;
-        matrices.tracebackMatrix[matrixPositions.current].positions = new uint[](branches);
+        matrices.tracebackMatrix[matrixPositions.current].positions = new TracebackCommand[](branches);
         
         if (matrixScores.diag == maxScore) {
           matrices.scoreMatrix[matrixPositions.current] = matrixScores.diag;
-          matrices.tracebackMatrix[matrixPositions.current].positions[k] = tracebackMapping["diag"];
+          matrices.tracebackMatrix[matrixPositions.current].positions[k] = TracebackCommand.DIAG;
           k++;
         }
 
         if (matrixScores.left == maxScore) {
           matrices.scoreMatrix[matrixPositions.current] = matrixScores.left;
-          matrices.tracebackMatrix[matrixPositions.current].positions[k] = tracebackMapping["left"];
+          matrices.tracebackMatrix[matrixPositions.current].positions[k] = TracebackCommand.LEFT;
           k++;
         }
 
         if (matrixScores.up == maxScore) {
           matrices.scoreMatrix[matrixPositions.current] = matrixScores.up;
-          matrices.tracebackMatrix[matrixPositions.current].positions[k] = tracebackMapping["up"];
+          matrices.tracebackMatrix[matrixPositions.current].positions[k] = TracebackCommand.UP;
           k++;
         }
       }
@@ -223,10 +205,10 @@ contract NeedlemanWunsch is Owner {
     return(matrices, total);
   }
 
-  function traceback(TracebackData memory tracebackData, string[2] memory sequences, AlignmentSequences[] memory alignments, AlignmentBranches[] memory tracebackMatrix)
-  internal view returns(AlignmentSequences[] memory, uint total) {
+  function traceback(TracebackData memory tracebackData, string[2] memory sequences, Alignment[] memory alignments, AlignmentBranches[] memory tracebackMatrix)
+  internal view returns(Alignment[] memory, uint total) {
     uint basePosition = tracebackData.currentPos;
-    if(tracebackMatrix[basePosition].positions[0] == tracebackMapping["done"]) return (alignments, tracebackData.k + 1);
+    if(tracebackMatrix[basePosition].positions[0] == TracebackCommand.STOP) return (alignments, tracebackData.k + 1);
 
     bytes memory bytesString = new bytes(1);
     (uint row, uint col) = convertArrayPosition(tracebackData.width, basePosition);
@@ -246,16 +228,16 @@ contract NeedlemanWunsch is Owner {
         }
       }
 
-      uint currentDir = tracebackMatrix[basePosition].positions[i];
+      TracebackCommand currentDir = tracebackMatrix[basePosition].positions[i];
 
-      if(currentDir == tracebackMapping["left"]) {
+      if(currentDir == TracebackCommand.LEFT) {
         bytesString[0] = bytes(sequences[0])[col - 1];
 
         alignments[tracebackData.k].alignmentA = string.concat(string(bytesString), alignments[tracebackData.k].alignmentA);
         alignments[tracebackData.k].alignmentB = string.concat("-", alignments[tracebackData.k].alignmentB);
         
         tracebackData.currentPos = basePosition - 1;
-      } else if(currentDir == tracebackMapping["up"]) {
+      } else if(currentDir == TracebackCommand.UP) {
         bytesString[0] = bytes(sequences[1])[row - 1];
 
         alignments[tracebackData.k].alignmentA = string.concat("-", alignments[tracebackData.k].alignmentA);
@@ -289,6 +271,31 @@ contract NeedlemanWunsch is Owner {
     return matrix.grid[secondIndex][firstIndex];
   }
 
+  function updateMatricesAddress(SubstitutionMatrices _address) 
+  public onlyAdmin {
+    matricesContract = _address;
+    updateAlphabetIndices();
+  }
+
+  function updateAlphabetIndices() 
+  public onlyAdmin {
+    require(matricesContract != SubstitutionMatrices(address(0)), "No substitution matrices known, a matrices contract first needs to be linked to this contract.");
+
+    string[] memory alphabetIds = matricesContract.getAlphabets();
+
+    for(uint i = 0; i < alphabetIds.length; i++) {
+      Structs.Alphabet memory alphabet = matricesContract.getAlphabet(alphabetIds[i]);
+      bytes1[] memory alphabetChars = alphabet.array;
+
+      for(uint j = 0; j < alphabetChars.length; j++) alphabetIndices[alphabetIds[i]][alphabetChars[j]]= j;
+    }
+  }
+  
+  function updateDefaultLimit(uint limit)
+  public onlyAdmin {
+    defaultLimit = limit;
+  }
+
   function convertArrayPosition(uint width, uint currentPosition)
   internal pure returns(uint row, uint col) {
     currentPosition = currentPosition + 1;
@@ -300,5 +307,4 @@ contract NeedlemanWunsch is Owner {
     row = row - 1;
     col = col - 1;
   }
-
 }

@@ -21,51 +21,51 @@ module.exports = {
   ],
 
   alphabets: {
-    nt: "alphabets/nt.txt",
-    aa: "alphabets/aa.txt",
+    nt: "datasets/alphabets/nt.txt",
+    aa: "datasets/alphabets/aa.txt",
   },
 
   matrices: {
     simple: {
       alphabet: "nt",
-      file: "matrices/nt/simple.txt",
+      file: "datasets/matrices/nt/simple.txt",
     },
     smart: {
       alphabet: "nt",
-      file: "matrices/nt/smart.txt",
+      file: "datasets/matrices/nt/smart.txt",
     },
     blosum50: {
       alphabet: "aa",
-      file: "matrices/aa/blosum50.txt",
+      file: "datasets/matrices/aa/blosum50.txt",
     },
     blosum62: {
       alphabet: "aa",
-      file: "matrices/aa/blosum62.txt",
+      file: "datasets/matrices/aa/blosum62.txt",
     },
     pam40: {
       alphabet: "aa",
-      file: "matrices/aa/pam40.txt",
+      file: "datasets/matrices/aa/pam40.txt",
     },
     pam120: {
       alphabet: "aa",
-      file: "matrices/aa/pam120.txt",
+      file: "datasets/matrices/aa/pam120.txt",
     },
     pam250: {
       alphabet: "aa",
-      file: "matrices/aa/pam250.txt",
+      file: "datasets/matrices/aa/pam250.txt",
     },
   },
 
   contracts: {
     substitutionMatrices: {
       name: "SubstitutionMatrices",
-      address: "",
+      address: "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
     },
     needlemanWunsch: {
       name: "NeedlemanWunsch",
-      address: "",
+      address: "0x4ed7c70F96B99c776995fB64377f0d4aB3B0e1C1",
       parameters: {
-        _matricesAddress: "",
+        _matricesAddress: "0xA51c1fc2f0D1a1b8494Ed1FE312d7C3a78Ed91C0",
       },
     },
   },

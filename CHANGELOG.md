@@ -1,5 +1,10 @@
 ## ALIGNING PATHWAYS
 
+#### 1.1.1 (2022-10-11)
+
+- Implemented the SubstitutionMatrices contract into NeedlemanWunsch.sol
+- Partial refactoring
+
 #### 1.1.0 (2022-10-11)
 
 - Started separating the SubstitutionMatrices logic.

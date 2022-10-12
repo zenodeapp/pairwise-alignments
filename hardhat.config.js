@@ -35,12 +35,11 @@ module.exports = {
 task("needlemanWunsch")
   .addParam("a")
   .addParam("b")
-  .addParam("type")
   .addOptionalParam("gap", "", "-1")
   .addOptionalParam("limit", "", "0")
   .addOptionalParam("matrix", "", "default")
   .setAction(async (taskArgs, hre) => {
-    const { a, b, type, gap, matrix, limit } = taskArgs;
+    const { a, b, gap, matrix, limit } = taskArgs;
     const contract = await getContract(
       hre,
       contracts.needlemanWunsch.name,
@@ -49,7 +48,6 @@ task("needlemanWunsch")
 
     const result = await contract._needlemanWunsch(a, b, {
       gapPenalty: parseInt(gap),
-      schemeType: type,
       substitutionMatrix: matrix,
       limit: parseInt(limit),
     });
@@ -57,7 +55,6 @@ task("needlemanWunsch")
     console.log(result);
     console.log({
       gap: parseInt(gap),
-      type: type,
       matrix: matrix,
     });
   });

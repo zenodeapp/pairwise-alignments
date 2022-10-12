@@ -12,7 +12,9 @@ contract NeedlemanWunsch is Owner {
   uint DEFAULT_ALIGNMENT_LIMIT = 25;
   SubstitutionMatrices matricesContract;
 
-  constructor() {
+  constructor(SubstitutionMatrices _matricesAddress) {
+    linkMatricesAddress(_matricesAddress);
+
     tracebackMapping["done"] = 0;
     tracebackMapping["left"] = 1;
     tracebackMapping["up"] = 2;
@@ -41,7 +43,6 @@ contract NeedlemanWunsch is Owner {
 
   struct AlignmentOptions {
     int gapPenalty;
-    string schemeType; //nt (nucleotides) or aa (amino acids)
     string substitutionMatrix; // blosum62, blosum50, pam250, simple, smart etc.
     // bool showMatrices;
     uint limit;
@@ -72,11 +73,10 @@ contract NeedlemanWunsch is Owner {
 
   function needlemanWunsch(string memory sequenceA, string memory sequenceB,
     int gapPenalty,
-    string memory schemeType,
     string memory substitutionMatrix,
     uint limit)
   public view returns(AlignmentOutput memory alignmentOutput) {
-    return _needlemanWunsch(sequenceA, sequenceB, AlignmentOptions(gapPenalty, schemeType, substitutionMatrix, limit));
+    return _needlemanWunsch(sequenceA, sequenceB, AlignmentOptions(gapPenalty, substitutionMatrix, limit));
   }
 
   function updateAlphabetIndices() 

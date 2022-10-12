@@ -6,7 +6,9 @@ async function main() {
   const contractName = contracts.needlemanWunsch.name;
 
   const Factory = await getFactory(hre, contractName);
-  const contract = await Factory.deploy();
+  const contract = await Factory.deploy(
+    contracts.needlemanWunsch.parameters._matricesAddress
+  );
 
   await contract.deployed();
 

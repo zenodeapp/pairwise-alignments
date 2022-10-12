@@ -59,11 +59,11 @@ module.exports = {
   contracts: {
     substitutionMatrices: {
       name: "SubstitutionMatrices",
-      address: "",
+      address: "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512",
     },
     needlemanWunsch: {
       name: "NeedlemanWunsch",
-      address: "0x4631BCAbD6dF18D94796344963cB60d44a4136b6",
+      address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
     },
   },
 };

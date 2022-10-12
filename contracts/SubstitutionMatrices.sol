@@ -1,26 +1,13 @@
 pragma solidity ^0.8.17;
 import './base/Owner.sol';
+import '../libraries/Structs.sol';
 
 //SPDX-License-Identifier: UNLICENSED
 //Created by Tousuke (zenodeapp - https://github.com/zenodeapp/).
 
 contract SubstitutionMatrices is Owner {
-  struct Matrix {
-    string id;
-    int[][] grid;
-    string alphabetId;
-    uint index;
-  }
-
-  struct Alphabet {
-    string id;
-    bytes1[] array;
-    uint usage;
-    uint index;
-  }
-
-  mapping(string => Matrix) matrices;
-  mapping(string => Alphabet) alphabets;
+  mapping(string => Structs.Matrix) matrices;
+  mapping(string => Structs.Alphabet) alphabets;
   mapping(string => mapping(bytes1 => uint)) alphabetsMapping;
   string[] public insertedMatrices;
   string[] public insertedAlphabets;
@@ -96,7 +83,7 @@ contract SubstitutionMatrices is Owner {
   }
 
   function getAlphabet(string memory id)
-  public view returns(Alphabet memory) {
+  public view returns(Structs.Alphabet memory) {
     require(isAlphabet(id), "Alphabet does not exist.");
     
     return alphabets[id];
@@ -154,7 +141,7 @@ contract SubstitutionMatrices is Owner {
   }
 
   function getMatrix(string memory id)
-  public view returns(Matrix memory) {
+  public view returns(Structs.Matrix memory) {
     require(isMatrix(id), "Matrix does not exist.");
     
     return matrices[id];

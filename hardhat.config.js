@@ -136,3 +136,18 @@ task("getScore")
 
     console.log(result);
   });
+
+task("linkMatricesAddress")
+  .addOptionalParam("address", "", contracts.substitutionMatrices.address)
+  .setAction(async (taskArgs, hre) => {
+    const { address } = taskArgs;
+    const contract = await getContract(
+      hre,
+      contracts.needlemanWunsch.name,
+      contracts.needlemanWunsch.address
+    );
+
+    const result = await contract.linkMatricesAddress(address);
+
+    console.log(result);
+  });

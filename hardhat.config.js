@@ -122,7 +122,7 @@ task("needlemanWunsch")
     );
 
     const result = await contract._needlemanWunsch(a, b, {
-      gapPenalty: parseInt(gap),
+      gap: parseInt(gap),
       substitutionMatrix: matrix,
       limit: parseInt(limit),
     });

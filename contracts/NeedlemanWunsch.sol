@@ -22,40 +22,30 @@ contract NeedlemanWunsch is Owner {
     updateMatricesAddress(_matricesAddress);
   }
 
-  struct MatrixPositions {
-    uint current;
-    uint up;
-    uint left;
-    uint diag;
+  struct AlignmentOptions {
+    int gap;
+    uint limit;
+    string substitutionMatrix;
+  }
+
+  struct AlignmentData {
+    bytes sequenceA;
+    bytes sequenceB;
+    GridTile[] tracebackMatrix;
+    uint width;
+    uint height;
   }
   
-  struct TracebackData {
-    uint currentPos;
-    uint width;
-    uint k;
+  struct AlignmentOutput {
+    string sequenceA;
+    string sequenceB;
+    Alignment[] alignments;
+    int score;
+    uint count;
   }
 
-  struct MatrixScores {
-    int current;
-    int up;
-    int left;
-    int diag;
-  }
-
-  struct AlignmentOptions {
-    int gapPenalty;
-    string substitutionMatrix; // blosum62, blosum50, pam250, simple, smart etc.
-    // bool showMatrices;
-    uint limit;
-  }
-
-  struct AlignmentBranches {
-    TracebackCommand[] positions;
-  }
-
-  struct Matrices {
-    int[] scoreMatrix;
-    AlignmentBranches[] tracebackMatrix;
+  struct GridTile {
+    TracebackCommand[] commands;
   }
 
   struct Alignment {
@@ -63,205 +53,255 @@ contract NeedlemanWunsch is Owner {
     string alignmentB;
   }
 
-  struct AlignmentOutput {
-    string sequenceA;
-    string sequenceB;
-    Alignment[] alignments;
-    int score;
-    uint alignmentsFound;
+  struct Pathway {
+    uint gridIndex;
+    TracebackCommand[] commands;
+    Alignment alignment;
   }
 
-
-
   function needlemanWunsch(string memory sequenceA, string memory sequenceB,
-    int gapPenalty,
+    int gap,
     string memory substitutionMatrix,
     uint limit)
   public view returns(AlignmentOutput memory alignmentOutput) {
-    return _needlemanWunsch(sequenceA, sequenceB, AlignmentOptions(gapPenalty, substitutionMatrix, limit));
+    return _needlemanWunsch(sequenceA, sequenceB, AlignmentOptions(gap, limit, substitutionMatrix));
   }
 
   function _needlemanWunsch(string memory sequenceA, string memory sequenceB, AlignmentOptions memory alignmentOptions)
   public view returns(AlignmentOutput memory alignmentOutput) {
     require(matricesContract != SubstitutionMatrices(address(0)), "No substitution matrices known, a matrices contract first needs to be linked to this contract.");
-    Structs.Matrix memory matrix = matricesContract.getMatrix(alignmentOptions.substitutionMatrix);
-
-    uint width = bytes(sequenceA).length + 1;
-    uint height = bytes(sequenceB).length + 1;
-    uint currentPos = width * height - 1;
 
     if(alignmentOptions.limit == 0) alignmentOptions.limit = defaultLimit;
 
-    // Initialization
-    (Matrices memory matrices) = initializeMatrices(width, height, alignmentOptions.gapPenalty);
+    // 1. Initialization
+    (AlignmentData memory alignmentData, int[] memory scoreMatrix) = initializeMatrices(sequenceA, sequenceB, alignmentOptions.gap);
 
-    // Scoring
-    uint total = 1;
-    (matrices, total) = scoreMatrices(matrices, width, height, [sequenceA, sequenceB], alignmentOptions, matrix);
+    // 2. Scoring matrices
+    alignmentData = scoreMatrices(scoreMatrix, alignmentData, alignmentOptions);
 
-    // Traceback
-    Alignment[] memory _alignments = new Alignment[](total);
-    (_alignments, total) = traceback(TracebackData(currentPos, width, 0), [sequenceA, sequenceB], _alignments, matrices.tracebackMatrix);
-    alignmentOutput.alignments = new Alignment[](total);
-    for(uint i = 0; i < total; i++) {
-      alignmentOutput.alignments[i] = _alignments[i];
-    }
-
+    // 3. Traceback & remaining output
+    alignmentOutput.alignments = traceback(alignmentData, alignmentOptions.limit);
     alignmentOutput.sequenceA = sequenceA;
     alignmentOutput.sequenceB = sequenceB;
-    alignmentOutput.score = matrices.scoreMatrix[currentPos];
-    alignmentOutput.alignmentsFound = total;
-    // if (alignmentOptions.showMatrices) alignmentOutput.matrices = matrices;
-
+    alignmentOutput.score = scoreMatrix[alignmentData.width * alignmentData.height - 1];
+    alignmentOutput.count = alignmentOutput.alignments.length;
   }
 
-  function initializeMatrices(uint width, uint height, int gapPenalty)
-  internal pure returns(Matrices memory matrices) {
-    int[] memory scoreMatrix = new int[](width * height);
-    AlignmentBranches[] memory tracebackMatrix = new AlignmentBranches[](width * height);
-
-    for(uint i = 0; i < width || i < height; i++) {
+  function initializeMatrices(string memory sequenceA, string memory sequenceB, int gap)
+  internal pure returns(AlignmentData memory alignmentData, int[] memory scoreMatrix) {
+    alignmentData.sequenceA = bytes(sequenceA);
+    alignmentData.sequenceB = bytes(sequenceB);
+    alignmentData.width = alignmentData.sequenceA.length + 1;
+    alignmentData.height = alignmentData.sequenceB.length + 1;
+    
+    alignmentData.tracebackMatrix = new GridTile[](alignmentData.width * alignmentData.height);
+    scoreMatrix = new int[](alignmentData.width * alignmentData.height);
+    uint max = alignmentData.width > alignmentData.height ? alignmentData.width : alignmentData.height;
+    
+    for (uint i = 0; i < max; i++) {
       if(i == 0) {
         scoreMatrix[i] = 0;
-        tracebackMatrix[i].positions = new TracebackCommand[](1);
-        tracebackMatrix[i].positions[0] = TracebackCommand.STOP;
+        alignmentData.tracebackMatrix[i].commands = new TracebackCommand[](1);
+        alignmentData.tracebackMatrix[i].commands[0] = TracebackCommand.STOP;
       } else {
-        if(i < width) {
-          scoreMatrix[i] = int(i) * gapPenalty;
-          tracebackMatrix[i].positions = new TracebackCommand[](1);
-          tracebackMatrix[i].positions[0] = TracebackCommand.LEFT;
+        if(i < alignmentData.width) {
+          scoreMatrix[i] = int(i) * gap;
+          alignmentData.tracebackMatrix[i].commands = new TracebackCommand[](1);
+          alignmentData.tracebackMatrix[i].commands[0] = TracebackCommand.LEFT;
         }
-        if(i < height) {
-          scoreMatrix[i*width] = int(i) * gapPenalty;
-          tracebackMatrix[i*width].positions = new TracebackCommand[](1);
-          tracebackMatrix[i*width].positions[0] = TracebackCommand.UP;
+
+        if(i < alignmentData.height) {
+          uint index = i * alignmentData.width;
+          scoreMatrix[index] = int(i) * gap;
+          alignmentData.tracebackMatrix[index].commands = new TracebackCommand[](1);
+          alignmentData.tracebackMatrix[index].commands[0] = TracebackCommand.UP;
         }
       }
     }
-
-    return Matrices(scoreMatrix, tracebackMatrix);
   }
 
-  function scoreMatrices(Matrices memory matrices, uint width, uint height, string[2] memory sequences, AlignmentOptions memory alignmentOptions, Structs.Matrix memory matrix)
-  internal view returns(Matrices memory, uint total) {
-    MatrixPositions memory matrixPositions;
-    MatrixScores memory matrixScores;
+  function scoreMatrices(int[] memory scoreMatrix, AlignmentData memory alignmentData, AlignmentOptions memory alignmentOptions)
+  internal view returns(AlignmentData memory) {
+    Structs.Matrix memory substitutionMatrix = matricesContract.getMatrix(alignmentOptions.substitutionMatrix);
 
-    for(uint i = 1; i < width; i++) {
-      for(uint j = 1; j < height; j++) {
-        matrixPositions.current = (j * width) + i;
-        matrixPositions.left = matrixPositions.current - 1;
-        matrixPositions.up = matrixPositions.current - width;
-        matrixPositions.diag = matrixPositions.up - 1;
+    for(uint i = 1; i < alignmentData.width; i++) {
+      for(uint j = 1; j < alignmentData.height; j++) {
+        uint current = (j * alignmentData.width) + i;
+        uint up = current - alignmentData.width;
 
-        matrixScores.left = matrices.scoreMatrix[matrixPositions.left] + alignmentOptions.gapPenalty;
-        matrixScores.up = matrices.scoreMatrix[matrixPositions.up] + alignmentOptions.gapPenalty;
-        matrixScores.diag = matrices.scoreMatrix[matrixPositions.diag] + getScore(matrix, bytes(sequences[0])[i-1], bytes(sequences[1])[j-1]);
+        // Calculate scores for left, up and diagonal
+        int scoreLeft = scoreMatrix[current - 1] + alignmentOptions.gap;
+        int scoreUp = scoreMatrix[up] + alignmentOptions.gap;
+        int scoreDiag = scoreMatrix[up - 1] 
+          + substitutionMatrix.grid
+            [alphabetIndices[substitutionMatrix.alphabetId][alignmentData.sequenceB[j-1]]]
+            [alphabetIndices[substitutionMatrix.alphabetId][alignmentData.sequenceA[i-1]]];
 
-        int maxScore = matrixScores.diag;
-        if (matrixScores.up > maxScore) maxScore = matrixScores.up;
-        if (matrixScores.left > maxScore) maxScore = matrixScores.left;
+        // Set max score for the current position
+        int maxScore = scoreDiag;
+        if (scoreUp > maxScore) maxScore = scoreUp;
+        if (scoreLeft > maxScore) maxScore = scoreLeft;
+        scoreMatrix[current] = maxScore;
 
-        uint branches = (matrixScores.diag == maxScore ? 1 : 0) 
-        + (matrixScores.left == maxScore ? 1 : 0) 
-        + (matrixScores.up == maxScore ? 1 : 0);
+        // Create TracebackCommand branches
+        uint branches = (scoreDiag == maxScore ? 1 : 0) 
+        + (scoreLeft == maxScore ? 1 : 0) 
+        + (scoreUp == maxScore ? 1 : 0);
+        alignmentData.tracebackMatrix[current].commands = new TracebackCommand[](branches);
 
         uint k = 0;
-        matrices.tracebackMatrix[matrixPositions.current].positions = new TracebackCommand[](branches);
-        
-        if (matrixScores.diag == maxScore) {
-          matrices.scoreMatrix[matrixPositions.current] = matrixScores.diag;
-          matrices.tracebackMatrix[matrixPositions.current].positions[k] = TracebackCommand.DIAG;
+        if (scoreDiag == maxScore) {
+          alignmentData.tracebackMatrix[current].commands[k] = TracebackCommand.DIAG;
           k++;
         }
 
-        if (matrixScores.left == maxScore) {
-          matrices.scoreMatrix[matrixPositions.current] = matrixScores.left;
-          matrices.tracebackMatrix[matrixPositions.current].positions[k] = TracebackCommand.LEFT;
+        if (scoreLeft == maxScore) {
+          alignmentData.tracebackMatrix[current].commands[k] = TracebackCommand.LEFT;
           k++;
         }
 
-        if (matrixScores.up == maxScore) {
-          matrices.scoreMatrix[matrixPositions.current] = matrixScores.up;
-          matrices.tracebackMatrix[matrixPositions.current].positions[k] = TracebackCommand.UP;
-          k++;
-        }
+        if (scoreUp == maxScore) alignmentData.tracebackMatrix[current].commands[k] = TracebackCommand.UP;
       }
     }
 
-    uint l = width < height ? width : height;
-    total = 2;
-
-    while(l != 0) {
-      if(total > alignmentOptions.limit) {
-        total = alignmentOptions.limit;
-        break;
-      }
-
-      total = total + 2*(2**l);
-      l--;
-    }
-
-    return(matrices, total);
+    return alignmentData;
   }
 
-  function traceback(TracebackData memory tracebackData, string[2] memory sequences, Alignment[] memory alignments, AlignmentBranches[] memory tracebackMatrix)
-  internal view returns(Alignment[] memory, uint total) {
-    uint basePosition = tracebackData.currentPos;
-    if(tracebackMatrix[basePosition].positions[0] == TracebackCommand.STOP) return (alignments, tracebackData.k + 1);
+  function traceback(AlignmentData memory alignmentData, uint limit)
+  internal pure returns(Alignment[] memory alignments) {
+    bytes memory charA = new bytes(1);
+    bytes memory charB = new bytes(1);
+    Pathway[] memory pathways = new Pathway[](limit);
 
-    bytes memory bytesString = new bytes(1);
-    (uint row, uint col) = convertArrayPosition(tracebackData.width, basePosition);
-    
-    string memory prevAlignmentA = alignments[tracebackData.k].alignmentA;
-    string memory prevAlignmentB = alignments[tracebackData.k].alignmentB;
+    uint count = 1;
+    uint i = 0;
+    uint start = alignmentData.width * alignmentData.height - 1;
 
-    for(uint i = 0; i < tracebackMatrix[basePosition].positions.length; i++) {
-      if(i > 0) {
-        for(uint j = 0; j < alignments.length; j++) {
-          if(bytes(alignments[j].alignmentA).length == 0) {
-            tracebackData.k = j;
-            alignments[tracebackData.k].alignmentA = prevAlignmentA;
-            alignments[tracebackData.k].alignmentB = prevAlignmentB;
-            break;
-          }
-        }
-      }
+    pathways[0] = Pathway(
+      start,
+      alignmentData.tracebackMatrix[start].commands,
+      Alignment("", "")
+    );
 
-      TracebackCommand currentDir = tracebackMatrix[basePosition].positions[i];
+    while(i < pathways.length) {
+      if(pathways[i].commands.length == 0) break;
 
-      if(currentDir == TracebackCommand.LEFT) {
-        bytesString[0] = bytes(sequences[0])[col - 1];
-
-        alignments[tracebackData.k].alignmentA = string.concat(string(bytesString), alignments[tracebackData.k].alignmentA);
-        alignments[tracebackData.k].alignmentB = string.concat("-", alignments[tracebackData.k].alignmentB);
-        
-        tracebackData.currentPos = basePosition - 1;
-      } else if(currentDir == TracebackCommand.UP) {
-        bytesString[0] = bytes(sequences[1])[row - 1];
-
-        alignments[tracebackData.k].alignmentA = string.concat("-", alignments[tracebackData.k].alignmentA);
-        alignments[tracebackData.k].alignmentB = string.concat(string(bytesString), alignments[tracebackData.k].alignmentB);
-
-        tracebackData.currentPos = basePosition - tracebackData.width;
-      } else {
-        bytesString[0] = bytes(sequences[0])[col - 1];
-        alignments[tracebackData.k].alignmentA = string.concat(string(bytesString), alignments[tracebackData.k].alignmentA);
-
-        bytesString[0] = bytes(sequences[1])[row - 1];
-        alignments[tracebackData.k].alignmentB = string.concat(string(bytesString), alignments[tracebackData.k].alignmentB);
-
-        tracebackData.currentPos = basePosition - tracebackData.width - 1;
-      }
-
-
-      (alignments, total) = traceback(tracebackData, sequences, alignments, tracebackMatrix);
+      Pathway memory currentPathway = Pathway(
+        pathways[i].gridIndex, 
+        pathways[i].commands, 
+        pathways[i].alignment
+      );
       
-      if(tracebackData.k == alignments.length - 1) return (alignments, tracebackData.k + 1);
+      (uint row, uint col) = convertArrayPosition(alignmentData.width, currentPathway.gridIndex);
+      
+      for(uint j = 0; j < currentPathway.commands.length; j++) {
+        if(j > 0 && count == pathways.length) break;
+
+        uint gridIndex = currentPathway.gridIndex;
+        Alignment memory newAlignment;
+
+        if(currentPathway.commands[j] == TracebackCommand.STOP) {
+          i++;
+
+          if(i == pathways.length) break;
+          else continue;
+          
+        } else if(currentPathway.commands[j] == TracebackCommand.DIAG) {
+          charA[0] = alignmentData.sequenceA[col - 1];
+          charB[0] = alignmentData.sequenceB[row - 1];
+          newAlignment = Alignment(
+            
+          string.concat(string(charA), currentPathway.alignment.alignmentA),
+            string.concat(string(charB), currentPathway.alignment.alignmentB));
+
+          gridIndex = gridIndex - alignmentData.width - 1;
+        } else if(currentPathway.commands[j] == TracebackCommand.UP) {
+          charB[0] = alignmentData.sequenceB[row - 1];
+          newAlignment = Alignment(
+            string.concat("-", currentPathway.alignment.alignmentA),
+            string.concat(string(charB), currentPathway.alignment.alignmentB));
+
+          gridIndex = gridIndex - alignmentData.width;
+        } else if(currentPathway.commands[j] == TracebackCommand.LEFT) {
+            charA[0] = alignmentData.sequenceA[col - 1];
+          newAlignment = Alignment(
+            string.concat(string(charA), currentPathway.alignment.alignmentA),
+            string.concat("-", currentPathway.alignment.alignmentB));
+
+          gridIndex = gridIndex - 1;
+        }
+        
+        if(j > 0 && count != pathways.length) count++;
+
+        uint index = j > 0 ? (count - 1) : i;
+        
+        pathways[index].gridIndex = gridIndex;
+        pathways[index].commands = alignmentData.tracebackMatrix[gridIndex].commands;
+        pathways[index].alignment = newAlignment;
+      }
     }
 
-    return (alignments, tracebackData.k + 1);
+    alignments = new Alignment[](count);
+    for(uint j = 0; j < count; j++) alignments[j] = pathways[j].alignment;
   }
+
+  // function tracebackRecursive(AlignmentData memory alignmentData, uint current, uint k, Alignment[] memory alignments)
+  // internal view returns(Alignment[] memory, uint total) {
+  //   uint basePosition = current;
+  //   if(alignmentData.tracebackMatrix[basePosition].commands[0] == TracebackCommand.STOP) return (alignments, k + 1);
+
+  //   bytes memory bytesString = new bytes(1);
+  //   (uint row, uint col) = convertArrayPosition(alignmentData.width, basePosition);
+    
+  //   string memory prevAlignmentA = alignments[k].alignmentA;
+  //   string memory prevAlignmentB = alignments[k].alignmentB;
+
+  //   for(uint i = 0; i < alignmentData.tracebackMatrix[basePosition].commands.length; i++) {
+  //     if(i > 0) {
+  //       for(uint j = 0; j < alignments.length; j++) {
+  //         if(bytes(alignments[j].alignmentA).length == 0) {
+  //           k = j;
+  //           alignments[k].alignmentA = prevAlignmentA;
+  //           alignments[k].alignmentB = prevAlignmentB;
+  //           break;
+  //         }
+  //       }
+  //     }
+
+  //     TracebackCommand currentDir = alignmentData.tracebackMatrix[basePosition].commands[i];
+
+  //     if(currentDir == TracebackCommand.LEFT) {
+  //       bytesString[0] = alignmentData.sequenceA[col - 1];
+
+  //       alignments[k].alignmentA = string.concat(string(bytesString), alignments[k].alignmentA);
+  //       alignments[k].alignmentB = string.concat("-", alignments[k].alignmentB);
+        
+  //       current = basePosition - 1;
+  //     } else if(currentDir == TracebackCommand.UP) {
+  //       bytesString[0] = alignmentData.sequenceB[row - 1];
+
+  //       alignments[k].alignmentA = string.concat("-", alignments[k].alignmentA);
+  //       alignments[k].alignmentB = string.concat(string(bytesString), alignments[k].alignmentB);
+
+  //       current = basePosition - alignmentData.width;
+  //     } else {
+  //       bytesString[0] = alignmentData.sequenceA[col - 1];
+  //       alignments[k].alignmentA = string.concat(string(bytesString), alignments[k].alignmentA);
+
+  //       bytesString[0] = alignmentData.sequenceB[row - 1];
+  //       alignments[k].alignmentB = string.concat(string(bytesString), alignments[k].alignmentB);
+
+  //       current = basePosition - alignmentData.width - 1;
+  //     }
+
+
+  //     (alignments, total) = tracebackRecursive(alignmentData, current, k, alignments);
+      
+  //     if(k == alignments.length - 1) return (alignments, k + 1);
+  //   }
+
+  //   return (alignments, k + 1);
+  // }
 
   function getScore(Structs.Matrix memory matrix, bytes1 firstLetter, bytes1 secondLetter)
   internal view returns(int) {

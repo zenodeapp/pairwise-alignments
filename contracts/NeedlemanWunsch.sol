@@ -3,7 +3,7 @@ import './base/Owner.sol';
 import './SubstitutionMatrices.sol';
 
 //SPDX-License-Identifier: UNLICENSED
-//Created by Tousuke (zenodeapp - https://github.com/zenodeapp/) - Work in Progress.
+//Created by Tousuke (zenodeapp - https://github.com/zenodeapp/)
 
 contract NeedlemanWunsch is Owner {
   SubstitutionMatrices matricesContract;

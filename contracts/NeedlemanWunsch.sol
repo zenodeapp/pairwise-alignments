@@ -145,22 +145,23 @@ contract NeedlemanWunsch is Owner {
 
         // Create TracebackCommand branches
         uint branches = (scoreDiag == maxScore ? 1 : 0) 
-        + (scoreLeft == maxScore ? 1 : 0) 
-        + (scoreUp == maxScore ? 1 : 0);
+          + (scoreLeft == maxScore ? 1 : 0) 
+          + (scoreUp == maxScore ? 1 : 0);
+        uint k = 0;
+
         alignmentData.tracebackMatrix[current].commands = new TracebackCommand[](branches);
 
-        uint k = 0;
         if (scoreDiag == maxScore) {
           alignmentData.tracebackMatrix[current].commands[k] = TracebackCommand.DIAG;
           k++;
         }
-
         if (scoreLeft == maxScore) {
           alignmentData.tracebackMatrix[current].commands[k] = TracebackCommand.LEFT;
           k++;
         }
-
-        if (scoreUp == maxScore) alignmentData.tracebackMatrix[current].commands[k] = TracebackCommand.UP;
+        if (scoreUp == maxScore) {
+          alignmentData.tracebackMatrix[current].commands[k] = TracebackCommand.UP;
+        }
       }
     }
 
@@ -169,17 +170,17 @@ contract NeedlemanWunsch is Owner {
 
   function traceback(AlignmentData memory alignmentData, uint limit)
   internal pure returns(Alignment[] memory alignments) {
+    uint i = 0;
+    uint count = 1;
+    uint startIndex = alignmentData.width * alignmentData.height - 1;
+
     bytes memory charA = new bytes(1);
     bytes memory charB = new bytes(1);
+
     Pathway[] memory pathways = new Pathway[](limit);
-
-    uint count = 1;
-    uint i = 0;
-    uint start = alignmentData.width * alignmentData.height - 1;
-
     pathways[0] = Pathway(
-      start,
-      alignmentData.tracebackMatrix[start].commands,
+      startIndex,
+      alignmentData.tracebackMatrix[startIndex].commands,
       Alignment("", "")
     );
 
@@ -192,52 +193,43 @@ contract NeedlemanWunsch is Owner {
         pathways[i].alignment
       );
       
-      (uint row, uint col) = convertArrayPosition(alignmentData.width, currentPathway.gridIndex);
+      (uint row, uint col) = get2DPosition(alignmentData.width, currentPathway.gridIndex);
       
       for(uint j = 0; j < currentPathway.commands.length; j++) {
         if(j > 0 && count == pathways.length) break;
-
-        uint gridIndex = currentPathway.gridIndex;
-        Alignment memory newAlignment;
 
         if(currentPathway.commands[j] == TracebackCommand.STOP) {
           i++;
 
           if(i == pathways.length) break;
           else continue;
-          
-        } else if(currentPathway.commands[j] == TracebackCommand.DIAG) {
+        }
+
+        uint gridIndex = currentPathway.gridIndex;
+        if(currentPathway.commands[j] == TracebackCommand.DIAG) {
+          gridIndex = gridIndex - alignmentData.width - 1;
           charA[0] = alignmentData.sequenceA[col - 1];
           charB[0] = alignmentData.sequenceB[row - 1];
-          newAlignment = Alignment(
-            
-          string.concat(string(charA), currentPathway.alignment.alignmentA),
-            string.concat(string(charB), currentPathway.alignment.alignmentB));
-
-          gridIndex = gridIndex - alignmentData.width - 1;
         } else if(currentPathway.commands[j] == TracebackCommand.UP) {
-          charB[0] = alignmentData.sequenceB[row - 1];
-          newAlignment = Alignment(
-            string.concat("-", currentPathway.alignment.alignmentA),
-            string.concat(string(charB), currentPathway.alignment.alignmentB));
-
           gridIndex = gridIndex - alignmentData.width;
+          charA[0] = "-";
+          charB[0] = alignmentData.sequenceB[row - 1];
         } else if(currentPathway.commands[j] == TracebackCommand.LEFT) {
-            charA[0] = alignmentData.sequenceA[col - 1];
-          newAlignment = Alignment(
-            string.concat(string(charA), currentPathway.alignment.alignmentA),
-            string.concat("-", currentPathway.alignment.alignmentB));
-
           gridIndex = gridIndex - 1;
+          charA[0] = alignmentData.sequenceA[col - 1];
+          charB[0] = "-";
         }
-        
-        if(j > 0 && count != pathways.length) count++;
 
-        uint index = j > 0 ? (count - 1) : i;
-        
+        uint index = j > 0 ? count : i;
+
         pathways[index].gridIndex = gridIndex;
         pathways[index].commands = alignmentData.tracebackMatrix[gridIndex].commands;
-        pathways[index].alignment = newAlignment;
+        pathways[index].alignment = Alignment(
+          string.concat(string(charA), currentPathway.alignment.alignmentA),
+          string.concat(string(charB), currentPathway.alignment.alignmentB)
+        );
+
+        if(j > 0 && count != pathways.length) count++;
       }
     }
 
@@ -245,70 +237,17 @@ contract NeedlemanWunsch is Owner {
     for(uint j = 0; j < count; j++) alignments[j] = pathways[j].alignment;
   }
 
-  // function tracebackRecursive(AlignmentData memory alignmentData, uint current, uint k, Alignment[] memory alignments)
-  // internal view returns(Alignment[] memory, uint total) {
-  //   uint basePosition = current;
-  //   if(alignmentData.tracebackMatrix[basePosition].commands[0] == TracebackCommand.STOP) return (alignments, k + 1);
+  // Helper function used in the traceback step
+  function get2DPosition(uint width, uint gridIndex)
+  private pure returns(uint row, uint col) {
+    gridIndex = gridIndex + 1;
 
-  //   bytes memory bytesString = new bytes(1);
-  //   (uint row, uint col) = convertArrayPosition(alignmentData.width, basePosition);
-    
-  //   string memory prevAlignmentA = alignments[k].alignmentA;
-  //   string memory prevAlignmentB = alignments[k].alignmentB;
+    row = gridIndex / width;
+    col = gridIndex % width == 0 ? width : gridIndex % width;
+    if(gridIndex % width != 0) row = row + 1;
 
-  //   for(uint i = 0; i < alignmentData.tracebackMatrix[basePosition].commands.length; i++) {
-  //     if(i > 0) {
-  //       for(uint j = 0; j < alignments.length; j++) {
-  //         if(bytes(alignments[j].alignmentA).length == 0) {
-  //           k = j;
-  //           alignments[k].alignmentA = prevAlignmentA;
-  //           alignments[k].alignmentB = prevAlignmentB;
-  //           break;
-  //         }
-  //       }
-  //     }
-
-  //     TracebackCommand currentDir = alignmentData.tracebackMatrix[basePosition].commands[i];
-
-  //     if(currentDir == TracebackCommand.LEFT) {
-  //       bytesString[0] = alignmentData.sequenceA[col - 1];
-
-  //       alignments[k].alignmentA = string.concat(string(bytesString), alignments[k].alignmentA);
-  //       alignments[k].alignmentB = string.concat("-", alignments[k].alignmentB);
-        
-  //       current = basePosition - 1;
-  //     } else if(currentDir == TracebackCommand.UP) {
-  //       bytesString[0] = alignmentData.sequenceB[row - 1];
-
-  //       alignments[k].alignmentA = string.concat("-", alignments[k].alignmentA);
-  //       alignments[k].alignmentB = string.concat(string(bytesString), alignments[k].alignmentB);
-
-  //       current = basePosition - alignmentData.width;
-  //     } else {
-  //       bytesString[0] = alignmentData.sequenceA[col - 1];
-  //       alignments[k].alignmentA = string.concat(string(bytesString), alignments[k].alignmentA);
-
-  //       bytesString[0] = alignmentData.sequenceB[row - 1];
-  //       alignments[k].alignmentB = string.concat(string(bytesString), alignments[k].alignmentB);
-
-  //       current = basePosition - alignmentData.width - 1;
-  //     }
-
-
-  //     (alignments, total) = tracebackRecursive(alignmentData, current, k, alignments);
-      
-  //     if(k == alignments.length - 1) return (alignments, k + 1);
-  //   }
-
-  //   return (alignments, k + 1);
-  // }
-
-  function getScore(Structs.Matrix memory matrix, bytes1 firstLetter, bytes1 secondLetter)
-  internal view returns(int) {
-    uint firstIndex = alphabetIndices[matrix.alphabetId][firstLetter];
-    uint secondIndex = alphabetIndices[matrix.alphabetId][secondLetter];
-
-    return matrix.grid[secondIndex][firstIndex];
+    row = row - 1;
+    col = col - 1;
   }
 
   function updateMatricesAddress(SubstitutionMatrices _address) 
@@ -334,17 +273,5 @@ contract NeedlemanWunsch is Owner {
   function updateDefaultLimit(uint limit)
   public onlyAdmin {
     defaultLimit = limit;
-  }
-
-  function convertArrayPosition(uint width, uint currentPosition)
-  internal pure returns(uint row, uint col) {
-    currentPosition = currentPosition + 1;
-
-    row = currentPosition / width;
-    col = currentPosition % width == 0 ? width : currentPosition % width;
-    if(currentPosition % width != 0) row = row + 1;
-
-    row = row - 1;
-    col = col - 1;
   }
 }

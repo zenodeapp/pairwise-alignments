@@ -3,6 +3,7 @@
 #### 1.2.0 (2022-10-13)
 
 - Improved the algorithm by creating a while-loop alternative instead of a recursive method for the traceback. This gets rid of the stack-overflow issue and also makes it possible for the algorithm to pair larger sequences.
+- Added SmithWaterman.sol, but the two algorithms require refactoring and decoupling (for they are very similar).
 
 #### 1.1.1 (2022-10-12)
 

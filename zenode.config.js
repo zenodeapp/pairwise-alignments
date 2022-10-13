@@ -61,6 +61,13 @@ module.exports = {
       name: "SubstitutionMatrices",
       address: "",
     },
+    smithWaterman: {
+      name: "SmithWaterman",
+      address: "",
+      parameters: {
+        _matricesAddress: "",
+      },
+    },
     needlemanWunsch: {
       name: "NeedlemanWunsch",
       address: "",

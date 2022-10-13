@@ -134,6 +134,33 @@ task("needlemanWunsch")
     });
   });
 
+task("smithWaterman")
+  .addParam("a")
+  .addParam("b")
+  .addOptionalParam("gap", "", "-1")
+  .addOptionalParam("limit", "", "0")
+  .addOptionalParam("matrix", "", "default")
+  .setAction(async (taskArgs, hre) => {
+    const { a, b, gap, matrix, limit } = taskArgs;
+    const contract = await getContract(
+      hre,
+      contracts.smithWaterman.name,
+      contracts.smithWaterman.address
+    );
+
+    const result = await contract._smithWaterman(a, b, {
+      gap: parseInt(gap),
+      substitutionMatrix: matrix,
+      limit: parseInt(limit),
+    });
+
+    console.log(result);
+    console.log({
+      gap: parseInt(gap),
+      matrix: matrix,
+    });
+  });
+
 task("updateMatricesAddress")
   .addOptionalParam("address", "", contracts.substitutionMatrices.address)
   .setAction(async (taskArgs, hre) => {

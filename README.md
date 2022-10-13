@@ -1,2 +1,2 @@
-# Needleman-Wunsch's Pairwise Alignment method
+# Pairwise Alignment methods
 Work in progress.

@@ -1,6 +1,6 @@
 {
-  "name": "needleman-wunsch",
-  "version": "1.2.0",
+  "name": "pairwise-alignment",
+  "version": "1.2.1",
   "main": "index.js",
   "license": "MIT",
   "devDependencies": {

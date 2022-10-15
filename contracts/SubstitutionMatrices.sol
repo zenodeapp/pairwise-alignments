@@ -1,9 +1,9 @@
+// SPDX-License-Identifier: UNLICENSED
+// Created by Tousuke (zenodeapp - https://github.com/zenodeapp/)
+
 pragma solidity ^0.8.17;
 import './base/Owner.sol';
 import '../libraries/Structs.sol';
-
-//SPDX-License-Identifier: UNLICENSED
-//Created by Tousuke (zenodeapp - https://github.com/zenodeapp/).
 
 contract SubstitutionMatrices is Owner {
   mapping(string => Structs.Matrix) matrices;

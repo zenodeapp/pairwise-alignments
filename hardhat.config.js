@@ -113,19 +113,31 @@ task("needlemanWunsch")
   .addOptionalParam("gap", "", "-1")
   .addOptionalParam("limit", "", "0")
   .addOptionalParam("matrix", "", "default")
+  .addOptionalParam("object", "", "false")
   .setAction(async (taskArgs, hre) => {
-    const { a, b, gap, matrix, limit } = taskArgs;
+    const { a, b, gap, matrix, limit, object } = taskArgs;
     const contract = await getContract(
       hre,
       contracts.needlemanWunsch.name,
       contracts.needlemanWunsch.address
     );
 
-    const result = await contract._needlemanWunsch(a, b, {
-      gap: parseInt(gap),
-      substitutionMatrix: matrix,
-      limit: parseInt(limit),
-    });
+    let result;
+    if (object === "true") {
+      result = await contract._needlemanWunsch(a, b, {
+        gap: parseInt(gap),
+        limit: parseInt(limit),
+        matrix,
+      });
+    } else {
+      result = await contract.needlemanWunsch(
+        a,
+        b,
+        parseInt(gap),
+        parseInt(limit),
+        matrix
+      );
+    }
 
     console.log(result);
     console.log({
@@ -140,19 +152,31 @@ task("smithWaterman")
   .addOptionalParam("gap", "", "-1")
   .addOptionalParam("limit", "", "0")
   .addOptionalParam("matrix", "", "default")
+  .addOptionalParam("object", "", "false")
   .setAction(async (taskArgs, hre) => {
-    const { a, b, gap, matrix, limit } = taskArgs;
+    const { a, b, gap, matrix, limit, object } = taskArgs;
     const contract = await getContract(
       hre,
       contracts.smithWaterman.name,
       contracts.smithWaterman.address
     );
 
-    const result = await contract._smithWaterman(a, b, {
-      gap: parseInt(gap),
-      substitutionMatrix: matrix,
-      limit: parseInt(limit),
-    });
+    let result;
+    if (object === "true") {
+      result = await contract._smithWaterman(a, b, {
+        gap: parseInt(gap),
+        limit: parseInt(limit),
+        matrix,
+      });
+    } else {
+      result = await contract.smithWaterman(
+        a,
+        b,
+        parseInt(gap),
+        parseInt(limit),
+        matrix
+      );
+    }
 
     console.log(result);
     console.log({
@@ -161,7 +185,7 @@ task("smithWaterman")
     });
   });
 
-task("updateMatricesAddress")
+task("linkNWToMatricesAddress")
   .addOptionalParam("address", "", contracts.substitutionMatrices.address)
   .setAction(async (taskArgs, hre) => {
     const { address } = taskArgs;
@@ -171,9 +195,26 @@ task("updateMatricesAddress")
       contracts.needlemanWunsch.address
     );
 
-    const result = await contract.updateMatricesAddress(address);
+    const result = await contract._linkToMatricesAddress(address);
 
     if (result) {
-      console.log(`Successfully updated the matrices address to ${address}!`);
+      console.log(`Successfully linked Needleman-Wunsch to ${address}!`);
+    }
+  });
+
+task("linkSWToMatricesAddress")
+  .addOptionalParam("address", "", contracts.substitutionMatrices.address)
+  .setAction(async (taskArgs, hre) => {
+    const { address } = taskArgs;
+    const contract = await getContract(
+      hre,
+      contracts.smithWaterman.name,
+      contracts.smithWaterman.address
+    );
+
+    const result = await contract._linkToMatricesAddress(address);
+
+    if (result) {
+      console.log(`Successfully linked Smith-Waterman to ${address}!`);
     }
   });

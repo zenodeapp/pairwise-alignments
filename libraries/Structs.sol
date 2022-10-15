@@ -1,7 +1,7 @@
-pragma solidity ^0.8.17;
+// SPDX-License-Identifier: UNLICENSED
+// Created by Tousuke (zenodeapp - https://github.com/zenodeapp/)
 
-//SPDX-License-Identifier: UNLICENSED
-//Created by Tousuke (zenodeapp - https://github.com/zenodeapp/).
+pragma solidity ^0.8.17;
 
 library Structs {
   struct Matrix {

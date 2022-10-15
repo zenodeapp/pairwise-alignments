@@ -1,7 +1,7 @@
-pragma solidity ^0.8.12;
+// SPDX-License-Identifier: UNLICENSED
+// Created by Tousuke (zenodeapp - https://github.com/zenodeapp/)
 
-//SPDX-License-Identifier: UNLICENSED
-//Created by Tousuke (zenodeapp - https://github.com/zenodeapp/).
+pragma solidity ^0.8.17;
 
 contract Owner {
   address owner;
@@ -12,12 +12,12 @@ contract Owner {
   }
 
   modifier onlyOwner {
-    require(isOwner(msg.sender), "Only the owner is allowed to do this.");
+    require(_isOwner(msg.sender), "Only the owner is allowed to do this.");
     _;
   }
 
   modifier onlyAdmin {
-    require(isOwner(msg.sender) || isAdmin(msg.sender), 
+    require(_isOwner(msg.sender) || _isAdmin(msg.sender), 
     "Only the owner or admins are allowed to do this.");
     _;
   }
@@ -27,23 +27,23 @@ contract Owner {
     _;
   }
 
-  function isOwner(address _address) public view returns(bool) {
+  function _isOwner(address _address) public view returns(bool) {
     return _address == owner;
   }
 
-  function isAdmin(address _address) public view returns(bool) {
+  function _isAdmin(address _address) public view returns(bool) {
     return admins[_address];
   }
 
-  function changeOwner(address _newOwner) public onlyOwner {
+  function _changeOwner(address _newOwner) public onlyOwner {
     owner = _newOwner;
   }
 
-  function addAdmin(address _address) public onlyOwner {
+  function _addAdmin(address _address) public onlyOwner {
     admins[_address] = true;
   }
 
-  function removeAdmin(address _address) public onlyOwner {
+  function _removeAdmin(address _address) public onlyOwner {
     admins[_address] = false;
   }
 } 

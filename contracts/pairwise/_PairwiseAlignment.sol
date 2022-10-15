@@ -1,11 +1,11 @@
+// SPDX-License-Identifier: UNLICENSED
+// Created by Tousuke (zenodeapp - https://github.com/zenodeapp/)
+
 pragma solidity ^0.8.17;
-import './base/Owner.sol';
-import './SubstitutionMatrices.sol';
+import '../base/Owner.sol';
+import '../SubstitutionMatrices.sol';
 
-//SPDX-License-Identifier: UNLICENSED
-//Created by Tousuke (zenodeapp - https://github.com/zenodeapp/)
-
-contract NeedlemanWunsch is Owner {
+contract PairwiseAlignment is Owner {
   SubstitutionMatrices matricesContract;
   uint defaultLimit = 25;
 
@@ -18,14 +18,15 @@ contract NeedlemanWunsch is Owner {
     STOP
   }
 
-  constructor(SubstitutionMatrices _matricesAddress) {
-    updateMatricesAddress(_matricesAddress);
-  }
-
   struct AlignmentOptions {
     int gap;
     uint limit;
-    string substitutionMatrix;
+    string matrix;
+  }
+
+  struct ScoreOptions {
+    bool enableFloor;
+    int floor;
   }
 
   struct AlignmentData {
@@ -59,70 +60,59 @@ contract NeedlemanWunsch is Owner {
     Alignment alignment;
   }
 
-  function needlemanWunsch(string memory sequenceA, string memory sequenceB,
-    int gap,
-    string memory substitutionMatrix,
-    uint limit)
-  public view returns(AlignmentOutput memory alignmentOutput) {
-    return _needlemanWunsch(sequenceA, sequenceB, AlignmentOptions(gap, limit, substitutionMatrix));
+  constructor(SubstitutionMatrices _matricesAddress) {
+    _linkToMatricesAddress(_matricesAddress);
   }
 
-  function _needlemanWunsch(string memory sequenceA, string memory sequenceB, AlignmentOptions memory alignmentOptions)
-  public view returns(AlignmentOutput memory alignmentOutput) {
+  function _before(string memory sequenceA, string memory sequenceB, AlignmentOptions memory alignmentOptions)
+  public view returns(AlignmentOptions memory) {
     require(matricesContract != SubstitutionMatrices(address(0)), "No substitution matrices known, a matrices contract first needs to be linked to this contract.");
+    require(bytes(sequenceA).length > 0, "Sequence A can't be an empty string.");
+    require(bytes(sequenceB).length > 0, "Sequence B can't be an empty string.");
 
     if(alignmentOptions.limit == 0) alignmentOptions.limit = defaultLimit;
 
-    // 1. Initialization
-    (AlignmentData memory alignmentData, int[] memory scoreMatrix) = initializeMatrices(sequenceA, sequenceB, alignmentOptions.gap);
-
-    // 2. Scoring matrices
-    alignmentData = scoreMatrices(scoreMatrix, alignmentData, alignmentOptions);
-
-    // 3. Traceback & remaining output
-    alignmentOutput.alignments = traceback(alignmentData, alignmentOptions.limit);
-    alignmentOutput.sequenceA = sequenceA;
-    alignmentOutput.sequenceB = sequenceB;
-    alignmentOutput.score = scoreMatrix[alignmentData.width * alignmentData.height - 1];
-    alignmentOutput.count = alignmentOutput.alignments.length;
+    return alignmentOptions;
   }
 
-  function initializeMatrices(string memory sequenceA, string memory sequenceB, int gap)
+  function initializeMatrices(string memory sequenceA, string memory sequenceB, int gap, TracebackCommand[3] memory tracebackCommands)
   internal pure returns(AlignmentData memory alignmentData, int[] memory scoreMatrix) {
     alignmentData.sequenceA = bytes(sequenceA);
     alignmentData.sequenceB = bytes(sequenceB);
     alignmentData.width = alignmentData.sequenceA.length + 1;
     alignmentData.height = alignmentData.sequenceB.length + 1;
     
-    alignmentData.tracebackMatrix = new GridTile[](alignmentData.width * alignmentData.height);
-    scoreMatrix = new int[](alignmentData.width * alignmentData.height);
+    uint size = alignmentData.width * alignmentData.height;
     uint max = alignmentData.width > alignmentData.height ? alignmentData.width : alignmentData.height;
+
+    alignmentData.tracebackMatrix = new GridTile[](size);
+    scoreMatrix = new int[](size);
     
     for (uint i = 0; i < max; i++) {
       if(i == 0) {
         scoreMatrix[i] = 0;
         alignmentData.tracebackMatrix[i].commands = new TracebackCommand[](1);
-        alignmentData.tracebackMatrix[i].commands[0] = TracebackCommand.STOP;
+        alignmentData.tracebackMatrix[i].commands[0] = tracebackCommands[0];
       } else {
         if(i < alignmentData.width) {
           scoreMatrix[i] = int(i) * gap;
           alignmentData.tracebackMatrix[i].commands = new TracebackCommand[](1);
-          alignmentData.tracebackMatrix[i].commands[0] = TracebackCommand.LEFT;
+          alignmentData.tracebackMatrix[i].commands[0] = tracebackCommands[1];
         }
 
         if(i < alignmentData.height) {
           uint index = i * alignmentData.width;
           scoreMatrix[index] = int(i) * gap;
           alignmentData.tracebackMatrix[index].commands = new TracebackCommand[](1);
-          alignmentData.tracebackMatrix[index].commands[0] = TracebackCommand.UP;
+          alignmentData.tracebackMatrix[index].commands[0] = tracebackCommands[2];
         }
       }
     }
   }
 
-  function scoreMatrices(int[] memory scoreMatrix, AlignmentData memory alignmentData, AlignmentOptions memory alignmentOptions)
+  function scoreMatrices(int[] memory scoreMatrix, AlignmentData memory alignmentData, AlignmentOptions memory alignmentOptions, ScoreOptions memory scoreOptions)
   internal view returns(AlignmentData memory) {
-    Structs.Matrix memory substitutionMatrix = matricesContract.getMatrix(alignmentOptions.substitutionMatrix);
+    Structs.Matrix memory substitutionMatrix = matricesContract.getMatrix(alignmentOptions.matrix);
 
     for(uint i = 1; i < alignmentData.width; i++) {
       for(uint j = 1; j < alignmentData.height; j++) {
@@ -141,15 +131,21 @@ contract NeedlemanWunsch is Owner {
         int maxScore = scoreDiag;
         if (scoreUp > maxScore) maxScore = scoreUp;
         if (scoreLeft > maxScore) maxScore = scoreLeft;
+        if (scoreOptions.enableFloor && maxScore < scoreOptions.floor) maxScore = scoreOptions.floor;
         scoreMatrix[current] = maxScore;
 
         // Create TracebackCommand branches
-        uint branches = (scoreDiag == maxScore ? 1 : 0) 
+        uint branches = (scoreOptions.enableFloor && maxScore == scoreOptions.floor ? 1 : ((scoreDiag == maxScore ? 1 : 0) 
           + (scoreLeft == maxScore ? 1 : 0) 
-          + (scoreUp == maxScore ? 1 : 0);
+          + (scoreUp == maxScore ? 1 : 0)));
         uint k = 0;
 
         alignmentData.tracebackMatrix[current].commands = new TracebackCommand[](branches);
+
+        if(scoreOptions.enableFloor && maxScore == scoreOptions.floor) {
+          alignmentData.tracebackMatrix[current].commands[k] = TracebackCommand.STOP;
+          continue;
+        }
 
         if (scoreDiag == maxScore) {
           alignmentData.tracebackMatrix[current].commands[k] = TracebackCommand.DIAG;
@@ -168,21 +164,24 @@ contract NeedlemanWunsch is Owner {
     return alignmentData;
   }
 
-  function traceback(AlignmentData memory alignmentData, uint limit)
+  function traceback(AlignmentData memory alignmentData, uint[] memory startIndices, uint limit)
   internal pure returns(Alignment[] memory alignments) {
     uint i = 0;
-    uint count = 1;
-    uint startIndex = alignmentData.width * alignmentData.height - 1;
-
+    uint count = startIndices.length;
+    if(count > limit) count = limit;
+    
     bytes memory charA = new bytes(1);
     bytes memory charB = new bytes(1);
 
     Pathway[] memory pathways = new Pathway[](limit);
-    pathways[0] = Pathway(
-      startIndex,
-      alignmentData.tracebackMatrix[startIndex].commands,
-      Alignment("", "")
-    );
+    
+    for(uint l = 0; l < pathways.length && l < startIndices.length; l++) {
+      pathways[l] = Pathway(
+        startIndices[l],
+        alignmentData.tracebackMatrix[startIndices[l]].commands,
+        Alignment("", "")
+      );
+    }
 
     while(i < pathways.length) {
       if(pathways[i].commands.length == 0) break;
@@ -239,7 +238,7 @@ contract NeedlemanWunsch is Owner {
 
   // Helper function used in the traceback step
   function get2DPosition(uint width, uint gridIndex)
-  private pure returns(uint row, uint col) {
+  internal pure returns(uint row, uint col) {
     gridIndex = gridIndex + 1;
 
     row = gridIndex / width;
@@ -250,13 +249,13 @@ contract NeedlemanWunsch is Owner {
     col = col - 1;
   }
 
-  function updateMatricesAddress(SubstitutionMatrices _address) 
+  function _linkToMatricesAddress(SubstitutionMatrices _address) 
   public onlyAdmin {
     matricesContract = _address;
-    updateAlphabetIndices();
+    _relinkAlphabets();
   }
 
-  function updateAlphabetIndices() 
+  function _relinkAlphabets() 
   public onlyAdmin {
     require(matricesContract != SubstitutionMatrices(address(0)), "No substitution matrices known, a matrices contract first needs to be linked to this contract.");
 
@@ -270,7 +269,7 @@ contract NeedlemanWunsch is Owner {
     }
   }
   
-  function updateDefaultLimit(uint limit)
+  function _updateDefaultLimit(uint limit)
   public onlyAdmin {
     defaultLimit = limit;
   }

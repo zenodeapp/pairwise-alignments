@@ -1,5 +1,9 @@
 ## ALIGNING PATHWAYS
 
+#### 1.2.1 (2022-10-15)
+
+- Refactored and decoupled the Pairwise Alignment algorithms as both have a lot in common. Shared code between the algorithms are now abstracted out. This was a bit of a sacrifice when it comes to performance, but no copy-pasting, thus less headaches when the code has to be adapted.
+
 #### 1.2.0 (2022-10-13)
 
 - Improved the algorithm by creating a while-loop alternative instead of a recursive method for the traceback. This gets rid of the stack-overflow issue and also makes it possible for the algorithm to pair larger sequences.

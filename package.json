@@ -1,8 +1,8 @@
 {
-  "name": "pairwise-alignment",
+  "name": "pairwise-alignments",
   "version": "1.2.1",
   "main": "index.js",
-  "license": "MIT",
+  "license": "unlicensed",
   "devDependencies": {
     "@ethersproject/abi": "^5.7.0",
     "@ethersproject/providers": "^5.7.1",

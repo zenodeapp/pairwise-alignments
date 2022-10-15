@@ -1,2 +1,2 @@
-# Pairwise Alignment methods
+# Pairwise Alignments
 Work in progress.

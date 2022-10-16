@@ -1,5 +1,5 @@
 # Pairwise Alignments
-A Solidity implementation of well-known alignment methods like Needleman-Wunsch's global sequence and Smith-Waterman's local sequence alignments.
+A Solidity implementation of well-known pairwise alignment methods such as Needleman-Wunsch's global sequence alignment and Smith-Waterman's local sequence alignment algorithms.
 
 This has been built by ZENODE within the Hardhat environment and is licensed under the MIT-license (see LICENSE.md).
 

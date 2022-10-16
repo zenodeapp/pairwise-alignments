@@ -3,6 +3,7 @@
 #### 1.2.1 (2022-10-15)
 
 - Refactored and decoupled the Pairwise Alignment algorithms as both have a lot in common. Shared code between the algorithms are now abstracted out. This was a bit of a sacrifice when it comes to performance, but no copy-pasting, thus less headaches when the code has to be adapted.
+- Added MIT-license and created a boilerplate for the README.md
 
 #### 1.2.0 (2022-10-13)
 

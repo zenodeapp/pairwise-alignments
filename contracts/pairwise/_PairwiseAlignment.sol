@@ -88,7 +88,7 @@ contract PairwiseAlignment is Owner {
   }
 
   function _before(string memory sequenceA, string memory sequenceB, AlignmentOptions memory alignmentOptions)
-  public view returns(AlignmentOptions memory) {
+  internal view returns(AlignmentOptions memory) {
     require(matricesContract != SubstitutionMatrices(address(0)), "No substitution matrices known, a matrices contract first needs to be linked to this contract.");
     require(bytes(sequenceA).length > 0, "Sequence A can't be an empty string.");
     require(bytes(sequenceB).length > 0, "Sequence B can't be an empty string.");

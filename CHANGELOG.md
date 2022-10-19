@@ -1,3 +1,10 @@
+## SEPARATE WAYS
+
+#### 1.3.0 (2022-10-18)
+
+- As contracts started to become more modular, it became apparent for me that this repository would have to be split into separate ones.
+- Submodules or adding shared code between repositories as an npm module is a great way to make this possible.
+
 ## ALIGNING PATHWAYS
 
 #### 1.2.1 (2022-10-15)

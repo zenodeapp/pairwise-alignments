@@ -2,6 +2,11 @@ yarn.lock
 artifacts/
 cache/
 
+the-awk-files/splitters/output
+the-awk-files/proteins/output
+the-awk-files/seeds/seed_size_*
+the-awk-files/wildcards/wildcard_size_*
+
 # Logs
 logs
 *.log

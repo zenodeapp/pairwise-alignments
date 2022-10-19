@@ -1,4 +1,4 @@
-// Created by ZENODE (zenodeapp - https://github.com/zenodeapp/)
+//Created by Tousuke (zenodeapp - https://github.com/zenodeapp/).
 
 const getContract = async (hre, name, address) => {
   const contract = await hre.ethers.getContractAt(name, address);

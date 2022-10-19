@@ -26,7 +26,7 @@
 
 pragma solidity ^0.8.17;
 
-library SubstitutionMatricesStructs {
+library Structs {
   struct Matrix {
     string id;
     int[][] grid;

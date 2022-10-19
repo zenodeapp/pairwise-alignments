@@ -1,6 +1,5 @@
 require("@nomicfoundation/hardhat-toolbox");
 const { task } = require("hardhat/config");
-const web3 = require("web3");
 const { getContract } = require("./helpers/web3");
 const { contracts } = require("./zenode.config");
 
@@ -31,81 +30,6 @@ module.exports = {
     timeout: 100000000,
   },
 };
-
-task("getMatrix")
-  .addParam("id")
-  .setAction(async (taskArgs, hre) => {
-    const { id } = taskArgs;
-    const contract = await getContract(
-      hre,
-      contracts.substitutionMatrices.name,
-      contracts.substitutionMatrices.address
-    );
-
-    const result = await contract.getMatrix(id);
-
-    console.log(result);
-  });
-
-task("getMatrices").setAction(async (_, hre) => {
-  const contract = await getContract(
-    hre,
-    contracts.substitutionMatrices.name,
-    contracts.substitutionMatrices.address
-  );
-
-  const result = await contract.getMatrices();
-
-  console.log(result);
-});
-
-task("getAlphabet")
-  .addParam("id")
-  .setAction(async (taskArgs, hre) => {
-    const { id } = taskArgs;
-    const contract = await getContract(
-      hre,
-      contracts.substitutionMatrices.name,
-      contracts.substitutionMatrices.address
-    );
-
-    const result = await contract.getAlphabet(id);
-
-    console.log(result);
-  });
-
-task("getAlphabets").setAction(async (_, hre) => {
-  const contract = await getContract(
-    hre,
-    contracts.substitutionMatrices.name,
-    contracts.substitutionMatrices.address
-  );
-
-  const result = await contract.getAlphabets();
-
-  console.log(result);
-});
-
-task("getScore")
-  .addParam("matrix")
-  .addParam("a")
-  .addParam("b")
-  .setAction(async (taskArgs, hre) => {
-    const { matrix, a, b } = taskArgs;
-    const contract = await getContract(
-      hre,
-      contracts.substitutionMatrices.name,
-      contracts.substitutionMatrices.address
-    );
-
-    const result = await contract.getScore(
-      matrix,
-      web3.utils.toHex(a),
-      web3.utils.toHex(b)
-    );
-
-    console.log(result);
-  });
 
 task("needlemanWunsch")
   .addParam("a")

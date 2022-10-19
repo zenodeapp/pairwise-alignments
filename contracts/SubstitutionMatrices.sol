@@ -25,7 +25,7 @@
 **********************************************************************************/
 
 pragma solidity ^0.8.17;
-import './base/Owner.sol';
+import '../submodules/zenode-helpers/contracts/base/Owner.sol';
 import '../libraries/Structs.sol';
 
 contract SubstitutionMatrices is Owner {

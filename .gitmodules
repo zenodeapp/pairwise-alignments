@@ -1,0 +1,3 @@
+[submodule "submodules/zenode-helpers"]
+	path = submodules/zenode-helpers
+	url = https://github.com/zenodeapp/zenode-helpers.git

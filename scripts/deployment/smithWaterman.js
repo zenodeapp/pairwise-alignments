@@ -1,4 +1,4 @@
-const { getFactory } = require("../../helpers/web3");
+const { getFactory } = require("../../submodules/zenode-helpers/helpers/web3");
 const { contracts } = require("../../zenode.config");
 const hre = require("hardhat");
 

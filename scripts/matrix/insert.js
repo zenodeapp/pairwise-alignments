@@ -1,5 +1,5 @@
 const fs = require("fs/promises");
-const { getContract } = require("../../helpers/web3");
+const { getContract } = require("../../submodules/zenode-helpers/helpers/web3");
 const { matrices, contracts, matrixToInsert } = require("../../zenode.config");
 const web3 = require("web3");
 

@@ -1,3 +1,9 @@
+## SEPARATE PATHS
+
+#### 1.3.0 (2022-10-19)
+
+- Splitted repositories to improve cohesion.
+
 ## ALIGNING PATHWAYS
 
 #### 1.2.1 (2022-10-15)

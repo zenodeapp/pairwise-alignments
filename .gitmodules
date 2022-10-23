@@ -1,7 +1,3 @@
-[submodule "submodules/substitution-matrices"]
-	path = submodules/substitution-matrices
-	url = https://github.com/zenodeapp/substitution-matrices.git
-  branch = main
 [submodule "submodules/zenode-contracts"]
 	path = submodules/zenode-contracts
 	url = https://github.com/zenodeapp/zenode-contracts.git

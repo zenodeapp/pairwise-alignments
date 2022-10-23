@@ -1,6 +1,6 @@
 require("@nomicfoundation/hardhat-toolbox");
 const { task } = require("hardhat/config");
-const { getContract } = require("./submodules/zenode-helpers/helpers/web3");
+const { getContract } = require("./submodules/zenode-contracts/helpers/web3");
 const { contracts } = require("./zenode.config");
 
 /** @type import('hardhat/config').HardhatUserConfig */

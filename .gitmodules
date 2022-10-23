@@ -2,3 +2,7 @@
 	path = submodules/zenode-contracts
 	url = https://github.com/zenodeapp/zenode-contracts.git
 	branch = main
+[submodule "submodules/substitution-matrices"]
+	path = submodules/substitution-matrices
+	url = https://github.com/zenodeapp/substitution-matrices.git
+	branch = main

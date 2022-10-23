@@ -63,7 +63,7 @@ git clone --recursive https://github.com/zenodeapp/pairwise-alignments.git <dest
 
 <br>
 
-If you've already downloaded or cloned this repository without including the `--recursive` flag, then run this command from the root folder:
+If you've already downloaded, forked or cloned this repository without including the `--recursive` flag, then run this command from the root folder:
 
 ```
 git submodule update --init --recursive

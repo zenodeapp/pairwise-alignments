@@ -32,12 +32,8 @@ contract SmithWaterman is PairwiseAlignment {
   constructor(SubstitutionMatrices _matricesAddress) PairwiseAlignment(_matricesAddress) {}
 
   function smithWaterman(string memory sequenceA, string memory sequenceB, int gap, uint limit, string memory matrix)
-  public view returns(Alignment[] memory alignments, int score, uint count) {
-    AlignmentOutput memory alignmentOutput = _smithWaterman(sequenceA, sequenceB, AlignmentOptions(gap, limit, matrix));
-    
-    alignments = alignmentOutput.alignments;
-    score = alignmentOutput.score;
-    count = alignmentOutput.count;
+  public view returns(AlignmentOutput memory) {
+    return _smithWaterman(sequenceA, sequenceB, AlignmentOptions(gap, limit, matrix));
   }
 
   function _smithWaterman(string memory sequenceA, string memory sequenceB, AlignmentOptions memory alignmentOptions)

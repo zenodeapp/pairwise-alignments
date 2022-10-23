@@ -32,12 +32,8 @@ contract NeedlemanWunsch is PairwiseAlignment {
   constructor(SubstitutionMatrices _matricesAddress) PairwiseAlignment(_matricesAddress) {}
 
   function needlemanWunsch(string memory sequenceA, string memory sequenceB, int gap, uint limit, string memory matrix)
-  public view returns(Alignment[] memory alignments, int score, uint count) {
-    AlignmentOutput memory alignmentOutput = _needlemanWunsch(sequenceA, sequenceB, AlignmentOptions(gap, limit, matrix));
-    
-    alignments = alignmentOutput.alignments;
-    score = alignmentOutput.score;
-    count = alignmentOutput.count;
+  public view returns(AlignmentOutput memory) {
+    return _needlemanWunsch(sequenceA, sequenceB, AlignmentOptions(gap, limit, matrix));
   }
 
   function _needlemanWunsch(string memory sequenceA, string memory sequenceB, AlignmentOptions memory alignmentOptions)

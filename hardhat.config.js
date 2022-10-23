@@ -32,36 +32,24 @@ module.exports = {
 };
 
 task("needlemanWunsch")
+  .addParam("matrix")
   .addParam("a")
   .addParam("b")
   .addOptionalParam("gap", "", "-1")
   .addOptionalParam("limit", "", "0")
-  .addOptionalParam("matrix", "", "default")
-  .addOptionalParam("object", "", "false")
   .setAction(async (taskArgs, hre) => {
-    const { a, b, gap, matrix, limit, object } = taskArgs;
+    const { a, b, gap, matrix, limit } = taskArgs;
     const contract = await getContract(
       hre,
       contracts.needlemanWunsch.name,
       contracts.needlemanWunsch.address
     );
 
-    let result;
-    if (object === "true") {
-      result = await contract._needlemanWunsch(a, b, {
-        gap: parseInt(gap),
-        limit: parseInt(limit),
-        matrix,
-      });
-    } else {
-      result = await contract.needlemanWunsch(
-        a,
-        b,
-        parseInt(gap),
-        parseInt(limit),
-        matrix
-      );
-    }
+    const result = await contract._needlemanWunsch(a, b, {
+      gap: parseInt(gap),
+      limit: parseInt(limit),
+      matrix,
+    });
 
     console.log(result);
     console.log({
@@ -71,36 +59,24 @@ task("needlemanWunsch")
   });
 
 task("smithWaterman")
+  .addParam("matrix")
   .addParam("a")
   .addParam("b")
   .addOptionalParam("gap", "", "-1")
   .addOptionalParam("limit", "", "0")
-  .addOptionalParam("matrix", "", "default")
-  .addOptionalParam("object", "", "false")
   .setAction(async (taskArgs, hre) => {
-    const { a, b, gap, matrix, limit, object } = taskArgs;
+    const { a, b, gap, matrix, limit } = taskArgs;
     const contract = await getContract(
       hre,
       contracts.smithWaterman.name,
       contracts.smithWaterman.address
     );
 
-    let result;
-    if (object === "true") {
-      result = await contract._smithWaterman(a, b, {
-        gap: parseInt(gap),
-        limit: parseInt(limit),
-        matrix,
-      });
-    } else {
-      result = await contract.smithWaterman(
-        a,
-        b,
-        parseInt(gap),
-        parseInt(limit),
-        matrix
-      );
-    }
+    const result = await contract._smithWaterman(a, b, {
+      gap: parseInt(gap),
+      limit: parseInt(limit),
+      matrix,
+    });
 
     console.log(result);
     console.log({

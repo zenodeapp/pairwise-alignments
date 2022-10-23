@@ -1,8 +1,0 @@
-{
-  "name": "zenode-helpers",
-  "version": "1.0.0",
-  "main": "index.js",
-  "repository": "https://github.com/zenodeapp/zenode-helpers.git",
-  "author": "zenodeapp",
-  "license": "MIT"
-}

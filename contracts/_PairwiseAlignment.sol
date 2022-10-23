@@ -26,7 +26,6 @@
 
 pragma solidity ^0.8.17;
 import '../submodules/substitution-matrices/contracts/SubstitutionMatrices.sol';
-import '../submodules/zenode-contracts/contracts/base/Owner.sol';
 
 contract PairwiseAlignment is Owner {
   SubstitutionMatrices matricesContract;

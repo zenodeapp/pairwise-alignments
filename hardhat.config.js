@@ -110,7 +110,11 @@ task("smithWaterman")
   });
 
 task("linkNWToMatricesAddress")
-  .addOptionalParam("address", "", contracts.substitutionMatrices.address)
+  .addOptionalParam(
+    "address",
+    "",
+    contracts.needlemanWunsch.parameters._matricesAddress
+  )
   .setAction(async (taskArgs, hre) => {
     const { address } = taskArgs;
     const contract = await getContract(
@@ -127,7 +131,11 @@ task("linkNWToMatricesAddress")
   });
 
 task("linkSWToMatricesAddress")
-  .addOptionalParam("address", "", contracts.substitutionMatrices.address)
+  .addOptionalParam(
+    "address",
+    "",
+    contracts.smithWaterman.parameters._matricesAddress
+  )
   .setAction(async (taskArgs, hre) => {
     const { address } = taskArgs;
     const contract = await getContract(

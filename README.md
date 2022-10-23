@@ -15,6 +15,14 @@ This has been built by ZENODE within the Hardhat environment and is licensed und
 
 ...
 
+### Hardhat
+
+- Scripts
+  - deployment/needlemanWunsch.js - deploys the Needleman-Wunsch contract to the configured network.
+  - deployment/smithWaterman.js - deploys the Smith-Waterman contract to the configured network.
+- Tasks for contract interaction (see [Interaction](#6-interaction)).
+
+
 ## Getting Started
 
 ### TL;DR

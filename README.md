@@ -65,6 +65,10 @@ This has been built by ZENODE within the Hardhat environment and is licensed und
 > // Now follow steps 1-5 (skip step 2) in TL;DR of the README.md in submodules/substitution-matrices
 > ```
 >
+> ```script
+> cd ../..
+> ```
+> 
 > [`4. Pre-configuration`](#4-pre-configuration) <i>--add SubstitutionMatrices address to [zenode.config.js](zenode.config.js)</i>
 >
 > ```javascript

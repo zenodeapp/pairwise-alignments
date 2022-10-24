@@ -62,7 +62,7 @@ This has been built by ZENODE within the Hardhat environment and is licensed und
 > ```
 >
 > ```javascript
-> // Now follow steps 3-5 in TL;DR of the README.md in submodules/substitution-matrices
+> // Now follow steps 1-5 (skip step 2) in TL;DR of the README.md in submodules/substitution-matrices
 > ```
 >
 > [`4. Pre-configuration`](#4-pre-configuration) <i>--add SubstitutionMatrices address to [zenode.config.js](zenode.config.js)</i>
@@ -167,7 +167,7 @@ Our pairwise alignment algorithms depend on the `SubstitutionMatrices`-contract 
    cd submodules/substitution-matrices
    ```
 
-2. Now, head over to the README.md file found in the [submodules/substitution-matrices](/submodules)-folder and continue from step 3 to 5 found in the `Getting Started`-section.
+2. Now, head over to the README.md file found in the [submodules/substitution-matrices](/submodules)-folder and continue from step 1 to 5 (skip step 2) found in the `Getting Started`-section.
 
    > TIP: follow the TL;DR for a quick setup!
 

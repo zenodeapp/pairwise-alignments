@@ -265,7 +265,7 @@ Executes the Needleman-Wunsch <i>global</i> sequence alignment on the given stri
 ```
 npx hardhat smithWaterman --matrix "MATRIX_ID" --a "SEQUENCE_A" --b "SEQUENCE_B"
 ```
-  
+
 </li>
 
 <li>
@@ -303,7 +303,7 @@ This changes the SubstitutionMatrices-address for the Needleman-Wunsch algorithm
 > > Why?
 > >
 > > Every time a `SubstitionMatrices`-contract gets linked to an algorithm (which happens once during the [Deployment](#5-deployment) phase), all the known `alphabets` get copied over to the algorithm's storage. This works like a cache and helps with optimizing our algorithms. However, if an update to the `alphabets` inside of the matrices' contract occurs, all algorithms that were deployed before the change will have outdated alphabets; relinking the matrices' address remedies such inconsistencies.
-  
+
 ```
 npx hardhat linkNWToMatricesAddress --address "hex_address"
 ```

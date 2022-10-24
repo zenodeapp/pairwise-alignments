@@ -263,7 +263,7 @@ Executes the Needleman-Wunsch <i>global</i> sequence alignment on the given stri
 > Valid `MATRIX_ID`s depend on which matrices you've populated in the [Substitution Matrices](#3-substitution-matrices-intermezzo) phase; see the zenode.config.js file in the substitution-matrices submodule or call `getMatrices` in the SubstitutionMatrices-contract.
 
 ```
-npx hardhat smithWaterman --matrix "MATRIX_ID" --a "SEQUENCE_A" --b "SEQUENCE_B"
+npx hardhat needlemanWunsch --matrix "MATRIX_ID" --a "SEQUENCE_A" --b "SEQUENCE_B"
 ```
 
 </li>

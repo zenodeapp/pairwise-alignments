@@ -250,24 +250,22 @@ Here are a few Hardhat tasks (written in [hardhat.config.js](/hardhat.config.js)
 
 Executes the Needleman-Wunsch <i>global</i> sequence alignment on the given string pair.
 
-```
-npx hardhat smithWaterman --matrix "MATRIX_ID" --a "SEQUENCE_A" --b "SEQUENCE_B"
-```
-
 - `input:` `--matrix string` `--a string` `--b string`
 
 - `input (optional):` `--gap int` <i>[default: "-1"]</i> `--limit uint` <i>[default: "0"]</i>
 
 - `output:` `struct AlignmentOutput` <i>--see [contracts/\_PairwiseAlignment.sol](/contracts/_PairwiseAlignment.sol)</i>
 
-<br>
-
 > `--gap` is the [gap penalty](https://en.wikipedia.org/wiki/Gap_penalty) (links to Wikipedia).
 >
 > `--limit "0"` will default to the default limit configured in the deployed contract itself.
-> 
+>
 > Valid `MATRIX_ID`s depend on which matrices you've populated in the [Substitution Matrices](#3-substitution-matrices-intermezzo) phase; see the zenode.config.js file in the substitution-matrices submodule or call `getMatrices` in the SubstitutionMatrices-contract.
 
+```
+npx hardhat smithWaterman --matrix "MATRIX_ID" --a "SEQUENCE_A" --b "SEQUENCE_B"
+```
+  
 </li>
 
 <li>
@@ -276,19 +274,17 @@ npx hardhat smithWaterman --matrix "MATRIX_ID" --a "SEQUENCE_A" --b "SEQUENCE_B"
 
 Executes the Smith-Waterman <i>local</i> sequence alignment on the given string pair.
 
-```
-npx hardhat smithWaterman --matrix "MATRIX_ID" --a "SEQUENCE_A" --b "SEQUENCE_B"
-```
-
 - `input:` `--matrix string` `--a string` `--b string`
 
 - `input (optional):` `--gap int` <i>[default: "-1"]</i> `--limit uint` <i>[default: "0"]</i>
 
 - `output:` `struct AlignmentOutput` <i>--see [contracts/\_PairwiseAlignment.sol](/contracts/_PairwiseAlignment.sol)</i>
 
-<br>
-
 > see <b>needlemanWunsch</b>'s annotations.
+
+```
+npx hardhat smithWaterman --matrix "MATRIX_ID" --a "SEQUENCE_A" --b "SEQUENCE_B"
+```
 
 </li>
 
@@ -298,21 +294,19 @@ npx hardhat smithWaterman --matrix "MATRIX_ID" --a "SEQUENCE_A" --b "SEQUENCE_B"
 
 This changes the SubstitutionMatrices-address for the Needleman-Wunsch algorithm.
 
-```
-npx hardhat linkNWToMatricesAddress --address "hex_address"
-```
-
 - `input (optional):` `--address hex_address` <i>[default: [contracts.needlemanWunsch.parameters.\_matricesAddress](zenode.config.js)]</i>
 
 - `output:` `void`
-
-<br>
 
 > IMPORTANT: run this command every time the `alphabets` in the `SubstitutionMatrices`-contract get updated! <i>(rarely happens)</i>
 >
 > > Why?
 > >
 > > Every time a `SubstitionMatrices`-contract gets linked to an algorithm (which happens once during the [Deployment](#5-deployment) phase), all the known `alphabets` get copied over to the algorithm's storage. This works like a cache and helps with optimizing our algorithms. However, if an update to the `alphabets` inside of the matrices' contract occurs, all algorithms that were deployed before the change will have outdated alphabets; relinking the matrices' address remedies such inconsistencies.
+  
+```
+npx hardhat linkNWToMatricesAddress --address "hex_address"
+```
 
 </li>
 
@@ -322,17 +316,15 @@ npx hardhat linkNWToMatricesAddress --address "hex_address"
 
 This changes the SubstitutionMatrices-address for the Smith-Waterman algorithm.
 
-```
-npx hardhat linkSWToMatricesAddress --address "hex_address"
-```
-
 - `input (optional):` `--address hex_address` <i>[default: [contracts.smithWaterman.parameters.\_matricesAddress](zenode.config.js)]</i>
 
 - `output:` `void`
 
-<br>
-
 > see <b>linkNWToMatricesAddress</b>' annotations.
+
+```
+npx hardhat linkSWToMatricesAddress --address "hex_address"
+```
 
 </li>
 </ul>

@@ -187,7 +187,7 @@ Our pairwise alignment algorithms depend on the `SubstitutionMatrices`-contract 
 
 Before we can deploy any alignment algorithm, it's necessary to state which `SubstitutionMatrices`-contract we link our algorithm to.
 
-To do this, open the [zenode.config.js](zenode.config.js) file and add the `SubstitutionMatrices address` (from [3. Substitution Matrices (Intermezzo)](#3-substitution-matrices-intermezzo)) to `parameters._matricesAddress`:
+To do this, open the [zenode.config.js](zenode.config.js) file and add the `SubstitutionMatrices address` (from [3. Substitution Matrices](#3-substitution-matrices-intermezzo)) to `parameters._matricesAddress`:
 
 ```javascript
   contracts: {

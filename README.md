@@ -337,7 +337,7 @@ npx hardhat linkSWToMatricesAddress --address "hex_address"
 
 ### A. [zenode.config.js](/zenode.config.js)
 
-This is where most of the <i>personalization</i> for contract deployment and filling takes place.
+This is where most of the <i>personalization</i> for contract deployment takes place.
 
 In the case of the `pairwise-alignments` repository this includes:
 

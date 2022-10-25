@@ -14,7 +14,10 @@ This has been built by ZENODE within the Hardhat environment and is licensed und
 
 ### Features
 
-- Expandable; pairwise algorithms similar to Needleman-Wunsch's alignment method could inherit functionality from the [\_PairwiseAlignment](contracts/_PairwiseAlignment.sol)-contract.
+- Expandable; similar pairwise alignment methods could inherit functionality from the [\_PairwiseAlignment](contracts/_PairwiseAlignment.sol)-contract.
+- Modular; loose coupling and high cohesion promote easy implementation into other contracts.
+- Re-usable; deploy only once and use in multiple contracts.
+  - An idea: use these contracts as building blocks for a [<i>Multiple Sequence Alignment</i>](https://en.wikipedia.org/wiki/Multiple_sequence_alignment)-contract (links to Wikipedia).
 - Ownership; access control and administrative privilege management.
 
 ### Algorithms
@@ -27,13 +30,13 @@ This has been built by ZENODE within the Hardhat environment and is licensed und
 - Scripts
   - deployment/needlemanWunsch.js - deploys the Needleman-Wunsch contract to the configured network.
   - deployment/smithWaterman.js - deploys the Smith-Waterman contract to the configured network.
-- Tasks for contract interaction (see [Interaction](#7-interaction)).
+- Tasks for contract interaction (see [7. Interaction](#7-interaction)).
 
 ## Getting Started
 
 ### TL;DR
 
-> [`0. Clone (recursively!)`](#0-clone)
+> [`0. Clone`](#0-clone) <i>--use the --recursive flag.</i>
 >
 > ```
 > git clone --recursive https://github.com/zenodeapp/pairwise-alignments.git <destination_folder>
@@ -55,21 +58,21 @@ This has been built by ZENODE within the Hardhat environment and is licensed und
 > npx hardhat node
 > ```
 >
-> [`3. Substitution Matrices (Intermezzo)`](#3-substitution-matrices-intermezzo) <i>--skip if you already have a SubstitutionMatrices contract deployed!</i>
+> [`3. Substitution Matrices (Intermezzo)`](#3-substitution-matrices-intermezzo) <i>--skip if you've already deployed the SubstitutionMatrices-contract!</i>
 >
 > ```script
 > cd submodules/substitution-matrices
 > ```
 >
 > ```javascript
-> // Now follow steps 1-5 (skip step 2) in TL;DR of the README.md in submodules/substitution-matrices
+> // Follow step 1 to 5, excluding step 2, in the TL;DR of submodules/substitution-matrices/README.md
 > ```
 >
 > ```script
 > cd ../..
 > ```
-> 
-> [`4. Pre-configuration`](#4-pre-configuration) <i>--add SubstitutionMatrices address to [zenode.config.js](zenode.config.js)</i>
+>
+> [`4. Pre-configuration`](#4-pre-configuration) <i>--add the SubstitutionMatrices address to [zenode.config.js](zenode.config.js).</i>
 >
 > ```javascript
 >   contracts: {
@@ -98,7 +101,7 @@ This has been built by ZENODE within the Hardhat environment and is licensed und
 >
 > > Only deploy the one(s) you pre-configured, see [scripts/deployment](scripts/deployment) for all possible algorithms.
 >
-> [`6. Configuration`](#6-configuration) <i>--add algorithm's address to [zenode.config.js](zenode.config.js)</i>
+> [`6. Configuration`](#6-configuration) <i>--add the algorithm's contract address to [zenode.config.js](zenode.config.js).</i>
 >
 > ```javascript
 >   contracts: {
@@ -163,7 +166,7 @@ This will create a test environment where we can deploy our contract(s) to. By d
 
 > `This step can be skipped if you've already deployed and populated a SubstitutionMatrices-contract.`
 
-Our pairwise alignment algorithms depend on the `SubstitutionMatrices`-contract as it's required for calculating alignment scores. So, before we continue, let us deploy these matrices to our node.
+Our alignment contracts depend on the SubstitutionMatrices-contract as it's required for calculating alignment scores. Thus, before continuing, we'll first have to deploy and populate a SubstitutionMatrices-contract.
 
 1. `cd` into the submodule's folder:
 
@@ -171,13 +174,13 @@ Our pairwise alignment algorithms depend on the `SubstitutionMatrices`-contract 
    cd submodules/substitution-matrices
    ```
 
-2. Now, head over to the README.md file found in the [submodules/substitution-matrices](/submodules)-folder and continue from step 1 to 5 (skip step 2) found in the `Getting Started`-section.
+2. Now, head over to the README.md file found in the [submodules/substitution-matrices](/submodules) folder and continue from step 1 to 5 (exclude step 2).
 
    > TIP: follow the TL;DR for a quick setup!
 
-   > NOTE: make sure you edit the files inside the submodule's folder and not in the root folder!
+   > CAUTION: be sure to remain inside the submodule's folder while following the guideline!
 
-3. Once you've got the SubstitutionMatrices contract set up, `cd` back into the `pairwise-alignments` root folder:
+3. Once you've got the SubstitutionMatrices-contract set up, `cd` back into the `pairwise-alignments`' root folder:
 
    ```
    cd ../..
@@ -185,7 +188,7 @@ Our pairwise alignment algorithms depend on the `SubstitutionMatrices`-contract 
 
 ### 4. Pre-configuration
 
-Before we can deploy any alignment algorithm, it's necessary to state which `SubstitutionMatrices`-contract we link our algorithm to.
+Before we can deploy any alignment algorithm, it's necessary to state which matrices' contract we'll use.
 
 To do this, open the [zenode.config.js](zenode.config.js) file and add the `SubstitutionMatrices address` (from [3. Substitution Matrices](#3-substitution-matrices-intermezzo)) to `parameters._matricesAddress`:
 
@@ -206,7 +209,7 @@ To do this, open the [zenode.config.js](zenode.config.js) file and add the `Subs
 
 ### 5. Deployment
 
-Now that we've pre-configured our `zenode.config.js`-file, we can deploy our algorithm(s) using:
+Now that we've pre-configured [zenode.config.js](zenode.config.js), we can deploy our algorithm(s) using:
 
 <b>Needleman-Wunsch</b>
 
@@ -224,7 +227,7 @@ npx hardhat run scripts/deployment/smithWaterman.js
 
 ### 6. Configuration
 
-Now head back to the [zenode.config.js](zenode.config.js) file and add the addresses for all the algorithms we deployed to the `contracts` object. That way it knows which deployed contracts it should interact with.
+Now head back to [zenode.config.js](zenode.config.js) and add the addresses for all the algorithms we deployed to the `contracts` object; so it knows which contracts it's supposed to [interact](#7-interaction) with.
 
 ```javascript
   contracts: {
@@ -262,12 +265,12 @@ Executes the Needleman-Wunsch <i>global</i> sequence alignment on the given stri
 
 > `--gap` is the [gap penalty](https://en.wikipedia.org/wiki/Gap_penalty) (links to Wikipedia).
 >
-> `--limit "0"` will default to the default limit configured in the deployed contract itself.
+> `--limit "0"` will default to the limit configured in the contract itself (see `defaultLimit` in [contracts/\_PairwiseAlignment.sol](/contracts/_PairwiseAlignment.sol)).
 >
-> Valid `MATRIX_ID`s depend on which matrices you've populated in the [Substitution Matrices](#3-substitution-matrices-intermezzo) phase; see the zenode.config.js file in the substitution-matrices submodule or call `getMatrices` in the SubstitutionMatrices-contract.
+> Valid `MATRIX_ID`s depend on which matrices were inserted in the [Substitution Matrices](#3-substitution-matrices-intermezzo) phase.
 
 ```
-npx hardhat needlemanWunsch --matrix "MATRIX_ID" --a "SEQUENCE_A" --b "SEQUENCE_B"
+npx hardhat needlemanWunsch --matrix "MATRIX_ID" --a "SEQ_A" --b "SEQ_B" --gap "-1" --limit "0"
 ```
 
 </li>
@@ -287,7 +290,7 @@ Executes the Smith-Waterman <i>local</i> sequence alignment on the given string 
 > see <b>needlemanWunsch</b>'s annotations.
 
 ```
-npx hardhat smithWaterman --matrix "MATRIX_ID" --a "SEQUENCE_A" --b "SEQUENCE_B"
+npx hardhat smithWaterman --matrix "MATRIX_ID" --a "SEQ_A" --b "SEQ_B" --gap "-1" --limit "0"
 ```
 
 </li>
@@ -302,11 +305,11 @@ This changes the SubstitutionMatrices-address for the Needleman-Wunsch algorithm
 
 - `output:` `void`
 
-> IMPORTANT: run this command every time the `alphabets` in the `SubstitutionMatrices`-contract get updated! <i>(rarely happens)</i>
+> IMPORTANT: run this command every time the `alphabets` in the SubstitutionMatrices-contract get updated! <i>(rarely happens)</i>
 >
 > > Why?
 > >
-> > Every time a `SubstitionMatrices`-contract gets linked to an algorithm (which happens once during the [Deployment](#5-deployment) phase), all the known `alphabets` get copied over to the algorithm's storage. This works like a cache and helps with optimizing our algorithms. However, if an update to the `alphabets` inside of the matrices' contract occurs, all algorithms that were deployed before the change will have outdated alphabets; relinking the matrices' address remedies such inconsistencies.
+> > Every time a SubstitionMatrices-contract gets linked to an algorithm (which happens once during the [Deployment](#5-deployment) phase), all known `alphabets` get copied over to the algorithm's storage. So whenever an update to the alphabets inside of the matrices' contract occurs, all algorithms that were deployed before the change will have outdated alphabets; relinking the matrices' address remedies such inconsistencies.
 
 ```
 npx hardhat linkNWToMatricesAddress --address "hex_address"
@@ -341,8 +344,8 @@ This is where most of the <i>personalization</i> for contract deployment takes p
 
 In the case of the `pairwise-alignments` repository this includes:
 
-- Configuring which `SubstitutionMatrices`-contract we'll link our algorithms with.
-- Configuring which contract we'll interact with in the [`Interaction`](#7-interaction) phase.
+- Configuring which SubstitutionMatrices-contract we'll link our algorithms to.
+- Configuring which contract we'll interact with in the [Interaction](#7-interaction) phase.
 - Expanding (or shrinking for that matter) the list of known pairwise alignment algorithms.
 
 ## Credits

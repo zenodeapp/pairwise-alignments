@@ -28,9 +28,9 @@ pragma solidity ^0.8.17;
 import '../submodules/substitution-matrices/contracts/SubstitutionMatrices.sol';
 
 contract PairwiseAlignment is Owner {
-  SubstitutionMatrices matricesContract;
-  uint defaultLimit = 25;
-  uint hardLimit = 1000;
+  SubstitutionMatrices public matricesContract;
+  uint public defaultLimit = 25;
+  uint public hardLimit = 1000;
 
   mapping(string => mapping(bytes1 => uint)) alphabetIndices;
 

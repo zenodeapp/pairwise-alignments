@@ -30,6 +30,7 @@ import '../submodules/substitution-matrices/contracts/SubstitutionMatrices.sol';
 contract PairwiseAlignment is Owner {
   SubstitutionMatrices matricesContract;
   uint defaultLimit = 25;
+  uint hardLimit = 1000;
 
   mapping(string => mapping(bytes1 => uint)) alphabetIndices;
 
@@ -93,6 +94,7 @@ contract PairwiseAlignment is Owner {
     require(bytes(sequenceB).length > 0, "Sequence B can't be an empty string.");
 
     if(alignmentOptions.limit == 0) alignmentOptions.limit = defaultLimit;
+    if(alignmentOptions.limit > hardLimit) alignmentOptions.limit = hardLimit;
 
     return alignmentOptions;
   }
@@ -294,5 +296,10 @@ contract PairwiseAlignment is Owner {
   function _updateDefaultLimit(uint limit)
   public onlyAdmin {
     defaultLimit = limit;
+  }
+
+  function _updateHardLimit(uint limit)
+  public onlyAdmin {
+    hardLimit = limit;
   }
 }

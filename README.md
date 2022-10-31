@@ -136,6 +136,8 @@ If you've already downloaded, forked or cloned this repository without including
 git submodule update --init --recursive
 ```
 
+> Read more on how to work with `submodules` in the [zenode-contracts](https://github.com/zenodeapp/zenode-contracts) repository.
+
 ### 1. Installation
 
 Install all dependencies using a package manager of your choosing:

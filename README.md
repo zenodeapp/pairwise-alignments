@@ -4,8 +4,6 @@ Solidity implementations of well-known pairwise alignment methods such as Needle
 
 This has been built by ZENODE within the Hardhat environment and is licensed under the MIT-license (see [LICENSE.md](./LICENSE.md)).
 
-### Implementation
-
 A fully functioning dApp can be found here: https://pairwize.zenode.app.
 
 ## Overview
